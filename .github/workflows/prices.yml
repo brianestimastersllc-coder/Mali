@@ -1,0 +1,29 @@
+name: Update prices
+on:
+  schedule:
+    # PSX trades Mon-Fri 09:30-15:30 PKT (04:30-10:30 UTC): hourly during the session,
+    # plus 16:30 UTC (21:30 PKT) daily to catch evening MUFAP NAV publication.
+    - cron: '45 4-10 * * 1-5'
+    - cron: '30 16 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: prices
+  cancel-in-progress: false
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python scripts/fetch_prices.py
+      - name: Commit updated data
+        run: |
+          git config user.name "sarmaya-bot"
+          git config user.email "actions@github.com"
+          git add data/
+          git diff --cached --quiet || git commit -m "data: price update $(date -u +'%Y-%m-%d %H:%M')"
+          git push

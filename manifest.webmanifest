@@ -1,0 +1,14 @@
+{
+  "name": "Sarmaya — Portfolio Tracker",
+  "short_name": "Sarmaya",
+  "description": "PSX & mutual fund portfolio monitor with Claude advisor",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0d1426",
+  "theme_color": "#0d1426",
+  "icons": [
+    { "src": "icon-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

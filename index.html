@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Sarmaya — Portfolio</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0d1426">
+<style>
+  :root {
+    --bg:#0d1426; --card:#151f38; --card2:#1a2645; --line:#243252;
+    --txt:#e8ecf5; --dim:#8b96b0; --gold:#d4a94e; --green:#34c77b; --red:#ef5350;
+    --blue:#4f9cf7; --orange:#ff9f43;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body {
+    background:var(--bg); color:var(--txt);
+    font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    padding-bottom:calc(70px + env(safe-area-inset-bottom));
+    max-width:560px; margin:0 auto;
+  }
+  header {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:calc(12px + env(safe-area-inset-top)) 16px 8px;
+  }
+  header h1 { font-size:20px; color:var(--gold); font-weight:700; letter-spacing:.5px; }
+  header h1 span { color:var(--dim); font-weight:400; font-size:13px; margin-left:6px; }
+  #updated { font-size:11px; color:var(--dim); text-align:right; line-height:1.4; }
+  #refreshBtn {
+    background:var(--card); border:1px solid var(--line); color:var(--gold);
+    border-radius:10px; padding:7px 12px; font-size:14px; margin-left:10px;
+  }
+  #refreshBtn:active { background:var(--card2); }
+  .wrap { padding:0 14px; }
+  .card {
+    background:var(--card); border:1px solid var(--line); border-radius:16px;
+    padding:16px; margin-bottom:12px;
+  }
+  .total-label { font-size:12px; color:var(--dim); text-transform:uppercase; letter-spacing:1px; }
+  .total-val { font-size:32px; font-weight:700; margin:4px 0 2px; }
+  .pl { font-size:15px; font-weight:600; }
+  .pl small { color:var(--dim); font-weight:400; }
+  .up { color:var(--green); } .down { color:var(--red); } .flat { color:var(--dim); }
+  .chips { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+  .chip {
+    background:var(--card2); border-radius:10px; padding:7px 11px; font-size:12px;
+    color:var(--dim); flex:1; min-width:90px;
+  }
+  .chip b { display:block; color:var(--txt); font-size:14px; margin-top:2px; }
+  #trend { width:100%; height:70px; margin-top:12px; display:none; }
+  .row {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:12px 14px; background:var(--card); border:1px solid var(--line);
+    border-radius:14px; margin-bottom:8px; cursor:pointer;
+  }
+  .row-l { min-width:0; }
+  .sym { font-weight:700; font-size:15px; display:flex; align-items:center; gap:6px; }
+  .name { font-size:11.5px; color:var(--dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px; }
+  .qty { font-size:11px; color:var(--dim); margin-top:2px; }
+  .row-r { text-align:right; flex-shrink:0; }
+  .val { font-weight:600; font-size:15px; }
+  .plpct { font-size:12.5px; font-weight:600; margin-top:2px; }
+  .price { font-size:11px; color:var(--dim); margin-top:1px; }
+  .detail {
+    display:none; background:var(--card2); border-radius:0 0 12px 12px;
+    margin:-8px 6px 8px; padding:14px 12px 10px; font-size:13px; border:1px solid var(--line); border-top:none;
+  }
+  .detail.open { display:block; }
+  .detail table { width:100%; border-collapse:collapse; }
+  .detail td { padding:3px 0; color:var(--dim); }
+  .detail td:last-child { text-align:right; color:var(--txt); font-weight:500; }
+  .advnote { margin-top:8px; padding:8px 10px; background:var(--bg); border-radius:8px; color:var(--txt); font-size:12.5px; line-height:1.5; }
+  .badge {
+    font-size:9.5px; font-weight:700; padding:2px 7px; border-radius:6px; letter-spacing:.5px;
+  }
+  .b-HOLD { background:rgba(52,199,123,.15); color:var(--green); }
+  .b-BUY, .b-ADD { background:rgba(79,156,247,.15); color:var(--blue); }
+  .b-SELL, .b-EXIT { background:rgba(239,83,80,.18); color:var(--red); }
+  .b-TRIM, .b-REVIEW { background:rgba(255,159,67,.15); color:var(--orange); }
+  .b-WATCH { background:rgba(212,169,78,.15); color:var(--gold); }
+  .sec-title { font-size:13px; color:var(--dim); margin:16px 4px 8px; text-transform:uppercase; letter-spacing:1px; }
+  nav {
+    position:fixed; bottom:0; left:0; right:0; max-width:560px; margin:0 auto;
+    display:flex; background:rgba(13,20,38,.96); backdrop-filter:blur(12px);
+    border-top:1px solid var(--line); padding-bottom:env(safe-area-inset-bottom); z-index:50;
+  }
+  nav button {
+    flex:1; background:none; border:none; color:var(--dim); font-size:11px;
+    padding:10px 0 8px; display:flex; flex-direction:column; align-items:center; gap:3px;
+  }
+  nav button.active { color:var(--gold); }
+  nav button .ico { font-size:20px; line-height:1; }
+  .page { display:none; } .page.active { display:block; }
+  /* advisor */
+  .adv-head { font-size:16px; font-weight:700; margin-bottom:6px; }
+  .adv-market { font-size:13.5px; line-height:1.65; color:var(--txt); }
+  .adv-item { margin-bottom:10px; }
+  .adv-item .t { display:flex; align-items:center; gap:8px; font-weight:600; font-size:14px; margin-bottom:4px; }
+  .adv-item .d { font-size:13px; color:var(--dim); line-height:1.55; }
+  .adv-item .tgt { font-size:12px; color:var(--gold); margin-top:3px; }
+  .disclaimer { font-size:11px; color:var(--dim); line-height:1.5; margin:14px 4px 4px; }
+  /* settings */
+  .set-row { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+  .set-row input {
+    background:var(--bg); border:1px solid var(--line); color:var(--txt);
+    border-radius:8px; padding:8px; font-size:13px; width:100%;
+  }
+  .set-sym { width:88px !important; flex-shrink:0; font-weight:600; }
+  .btn {
+    background:var(--card2); border:1px solid var(--line); color:var(--txt);
+    border-radius:10px; padding:10px 14px; font-size:13.5px; width:100%; margin-bottom:8px;
+  }
+  .btn.gold { background:var(--gold); color:#12182c; font-weight:700; border:none; }
+  .btn.danger { color:var(--red); }
+  .muted { color:var(--dim); font-size:12px; line-height:1.5; }
+  .del { background:none; border:none; color:var(--red); font-size:16px; padding:4px; }
+  #toast {
+    position:fixed; bottom:90px; left:50%; transform:translateX(-50%);
+    background:var(--card2); border:1px solid var(--line); color:var(--txt);
+    padding:10px 18px; border-radius:12px; font-size:13px; display:none; z-index:99; white-space:nowrap;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Sarmaya <span>سرمایہ</span></h1>
+  <div style="display:flex;align-items:center">
+    <div id="updated"></div>
+    <button id="refreshBtn" onclick="refreshAll(true)">↻</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <div id="page-portfolio" class="page active">
+    <div class="card">
+      <div class="total-label">Total portfolio value</div>
+      <div class="total-val" id="totalVal">—</div>
+      <div class="pl" id="totalPL"></div>
+      <div class="chips" id="chips"></div>
+      <svg id="trend" preserveAspectRatio="none"></svg>
+    </div>
+    <div class="sec-title">Stocks (PSX)</div>
+    <div id="stockList"></div>
+    <div class="sec-title">Mutual Funds</div>
+    <div id="fundList"></div>
+  </div>
+
+  <div id="page-advisor" class="page">
+    <div id="advisorContent"><div class="card muted">No advisor report yet. It will appear here after the first scheduled review.</div></div>
+  </div>
+
+  <div id="page-settings" class="page">
+    <div class="card">
+      <div class="adv-head">Holdings</div>
+      <p class="muted" style="margin-bottom:10px">Edit quantities / average buy prices after any trade. Stored on this device.</p>
+      <div class="sec-title" style="margin-left:0">Stocks</div>
+      <div id="editStocks"></div>
+      <div class="sec-title" style="margin-left:0">Funds</div>
+      <div id="editFunds"></div>
+      <div class="sec-title" style="margin-left:0">Cash</div>
+      <div class="set-row"><input class="set-sym" value="CASH" disabled><input id="cashIn" type="number" step="0.01"><span style="width:24px"></span></div>
+      <button class="btn gold" onclick="saveHoldings()">Save changes</button>
+      <button class="btn" onclick="exportData()">Export backup (JSON)</button>
+      <button class="btn" onclick="document.getElementById('importFile').click()">Import backup</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+      <button class="btn danger" onclick="resetDefaults()">Reset to original holdings</button>
+    </div>
+  </div>
+</div>
+
+<nav>
+  <button id="nav-portfolio" class="active" onclick="show('portfolio')"><span class="ico">📊</span>Portfolio</button>
+  <button id="nav-advisor" onclick="show('advisor')"><span class="ico">🧭</span>Advisor</button>
+  <button id="nav-settings" onclick="show('settings')"><span class="ico">⚙️</span>Settings</button>
+</nav>
+<div id="toast"></div>
+
+<script>
+const RAW = 'https://raw.githubusercontent.com/brianestimastersllc-coder/Sarmaya/main';
+const LS_HOLD = 'sarmaya-holdings-v1', LS_PRICES = 'sarmaya-prices-v1', LS_ADVICE = 'sarmaya-advice-v1', LS_HIST = 'sarmaya-history-v1';
+
+const DEFAULT_HOLDINGS = {
+  stocks: [
+    { sym:'AVN',     name:'Avanceon Ltd',              qty:24500, avg:45.08 },
+    { sym:'BWCL',    name:'Bestway Cement',            qty:1700,  avg:461.30 },
+    { sym:'CPHL',    name:'Citi Pharma',               qty:9200,  avg:85.39 },
+    { sym:'FABL',    name:'Faysal Bank',               qty:6000,  avg:67.55 },
+    { sym:'NATF',    name:'National Foods',            qty:1400,  avg:360.38 },
+    { sym:'GLAXO',   name:'GlaxoSmithKline Pakistan',  qty:1400,  avg:354.39 },
+    { sym:'AIRLINK', name:'Air Link Communication',    qty:3300,  avg:146.55 },
+    { sym:'MEBL',    name:'Meezan Bank',               qty:900,   avg:363.80 },
+    { sym:'EFERT',   name:'Engro Fertilizers',         qty:2500,  avg:199.05 },
+    { sym:'MUGHAL',  name:'Mughal Iron & Steel',       qty:3900,  avg:65.54 },
+    { sym:'MZNPETF', name:'Meezan Pakistan ETF',       qty:13500, avg:19.72 },
+    { sym:'GHGL',    name:'Ghani Glass',               qty:6100,  avg:34.73 },
+    { sym:'SEARL',   name:'The Searle Company',        qty:2335,  avg:82.90 },
+    { sym:'FATIMA',  name:'Fatima Fertilizer',         qty:1200,  avg:107.50 },
+    { sym:'MIIETF',  name:'Mahaana Islamic Index ETF', qty:8500,  avg:16.64 },
+    { sym:'FFL',     name:'Fauji Foods',               qty:8000,  avg:15.35 },
+    { sym:'DCR',     name:'Dolmen City REIT',          qty:2900,  avg:31.00 },
+    { sym:'UPFL',    name:'Unilever Pakistan Foods',   qty:3,     avg:20942 }
+  ],
+  funds: [
+    { sym:'ASSF',    name:'Al-Ameen Shariah Stock Fund',      qty:2269.05, avg:445.47 },
+    { sym:'AKDISSF', name:'AKD Islamic Stock Fund',           qty:4793.47, avg:107.44 },
+    { sym:'NISIF',   name:'NBP Islamic Sarmaya Izafa Fund',   qty:8645.21, avg:35.08 },
+    { sym:'NISF',    name:'NBP Islamic Stock Fund',           qty:9544.83, avg:20.95 },
+    { sym:'MIF',     name:'Meezan Islamic Fund',              qty:1389.19, avg:143.83 },
+    { sym:'AICF',    name:'Al-Ameen Islamic Cash Fund',       qty:1969.69, avg:101.53 },
+    { sym:'MICF',    name:'Mahaana Islamic Cash Fund',        qty:1867.68, avg:107.09 },
+    { sym:'AIAIP',   name:'Al-Ameen Islamic Active Alloc.',   qty:13.51,   avg:171.39 },
+    { sym:'AKDISIF', name:'AKD Islamic Income Fund',          qty:4.43,    avg:52.91 }
+  ],
+  cash: 4278.69
+};
+
+let holdings = JSON.parse(localStorage.getItem(LS_HOLD) || 'null') || structuredClone(DEFAULT_HOLDINGS);
+let prices   = JSON.parse(localStorage.getItem(LS_PRICES) || 'null') || { updated:null, stocks:{}, funds:{} };
+let advice   = JSON.parse(localStorage.getItem(LS_ADVICE) || 'null');
+let history  = JSON.parse(localStorage.getItem(LS_HIST) || 'null') || {};
+
+const fmt0 = new Intl.NumberFormat('en-PK', { maximumFractionDigits:0 });
+const fmt2 = new Intl.NumberFormat('en-PK', { maximumFractionDigits:2, minimumFractionDigits:2 });
+const rs = v => 'Rs ' + fmt0.format(v);
+const cls = v => v > 0.005 ? 'up' : v < -0.005 ? 'down' : 'flat';
+const sign = v => (v >= 0 ? '+' : '');
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'block';
+  clearTimeout(t._h); t._h = setTimeout(() => t.style.display = 'none', 2600);
+}
+
+function priceOf(kind, h) {
+  const p = (kind === 'stock' ? prices.stocks : prices.funds)[h.sym];
+  return (typeof p === 'number' && p > 0) ? p : h.avg; // fall back to cost → flat P/L
+}
+function hasPrice(kind, h) {
+  const p = (kind === 'stock' ? prices.stocks : prices.funds)[h.sym];
+  return typeof p === 'number' && p > 0;
+}
+
+function adviceFor(sym) {
+  if (!advice || !advice.actions) return null;
+  return advice.actions.find(a => a.sym === sym) || null;
+}
+
+function renderList(el, kind, arr) {
+  el.innerHTML = '';
+  const sorted = [...arr].sort((a, b) => priceOf(kind, b) * b.qty - priceOf(kind, a) * a.qty);
+  for (const h of sorted) {
+    const p = priceOf(kind, h), val = p * h.qty, inv = h.avg * h.qty;
+    const pl = val - inv, plp = inv ? pl / inv * 100 : 0;
+    const adv = adviceFor(h.sym);
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.innerHTML = `
+      <div class="row-l">
+        <div class="sym">${h.sym}${adv ? ` <span class="badge b-${adv.action}">${adv.action}</span>` : ''}</div>
+        <div class="name">${h.name}</div>
+        <div class="qty">${fmt2.format(h.qty).replace(/\.00$/,'')} @ ${fmt2.format(h.avg)}</div>
+      </div>
+      <div class="row-r">
+        <div class="val">${rs(val)}</div>
+        <div class="plpct ${cls(plp)}">${sign(plp)}${plp.toFixed(1)}% <small style="font-weight:400">(${sign(pl)}${fmt0.format(pl)})</small></div>
+        <div class="price">${hasPrice(kind, h) ? fmt2.format(p) : 'no live price'}</div>
+      </div>`;
+    const det = document.createElement('div');
+    det.className = 'detail';
+    det.innerHTML = `
+      <table>
+        <tr><td>Invested</td><td>${rs(inv)}</td></tr>
+        <tr><td>Current value</td><td>${rs(val)}</td></tr>
+        <tr><td>Gain / loss</td><td class="${cls(pl)}">${sign(pl)}${fmt0.format(pl)} (${sign(plp)}${plp.toFixed(2)}%)</td></tr>
+        <tr><td>Last price</td><td>${hasPrice(kind, h) ? fmt2.format(p) : '—'}</td></tr>
+      </table>
+      ${adv ? `<div class="advnote"><b>${adv.action}</b> — ${adv.detail}${adv.target ? `<div style="color:var(--gold);margin-top:4px">${adv.target}</div>` : ''}</div>` : ''}`;
+    row.onclick = () => det.classList.toggle('open');
+    el.appendChild(row); el.appendChild(det);
+  }
+}
+
+function renderTrend() {
+  const svg = document.getElementById('trend');
+  const days = Object.keys(history).sort();
+  if (days.length < 2) { svg.style.display = 'none'; return; }
+  const vals = days.map(d => {
+    let t = holdings.cash || 0;
+    for (const h of holdings.stocks) t += (history[d].stocks?.[h.sym] ?? priceOf('stock', h)) * h.qty;
+    for (const h of holdings.funds)  t += (history[d].funds?.[h.sym]  ?? priceOf('fund', h))  * h.qty;
+    return t;
+  });
+  const W = 500, H = 70, min = Math.min(...vals), max = Math.max(...vals), span = (max - min) || 1;
+  const pts = vals.map((v, i) => `${(i / (vals.length - 1) * W).toFixed(1)},${(H - 8 - (v - min) / span * (H - 16)).toFixed(1)}`);
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.innerHTML = `<polyline points="${pts.join(' ')}" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+  svg.style.display = 'block';
+}
+
+function render() {
+  let inv = 0, val = 0, sVal = 0, fVal = 0;
+  for (const h of holdings.stocks) { inv += h.avg * h.qty; sVal += priceOf('stock', h) * h.qty; }
+  for (const h of holdings.funds)  { inv += h.avg * h.qty; fVal += priceOf('fund', h) * h.qty; }
+  val = sVal + fVal;
+  const cash = holdings.cash || 0;
+  const pl = val - inv, plp = inv ? pl / inv * 100 : 0;
+  document.getElementById('totalVal').textContent = rs(val + cash);
+  const tp = document.getElementById('totalPL');
+  tp.className = 'pl ' + cls(pl);
+  tp.innerHTML = `${sign(pl)}${fmt0.format(pl)} (${sign(plp)}${plp.toFixed(2)}%) <small>vs invested ${rs(inv)}</small>`;
+  document.getElementById('chips').innerHTML = `
+    <div class="chip">Stocks<b>${rs(sVal)}</b></div>
+    <div class="chip">Funds<b>${rs(fVal)}</b></div>
+    <div class="chip">Cash<b>${rs(cash)}</b></div>`;
+  document.getElementById('updated').innerHTML = prices.updated
+    ? `prices as of<br>${new Date(prices.updated).toLocaleString('en-PK', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })}`
+    : 'prices: cached';
+  renderList(document.getElementById('stockList'), 'stock', holdings.stocks);
+  renderList(document.getElementById('fundList'), 'fund', holdings.funds);
+  renderTrend();
+  renderAdvisor();
+  renderSettings();
+}
+
+function renderAdvisor() {
+  const el = document.getElementById('advisorContent');
+  if (!advice) return;
+  const order = ['SELL','EXIT','TRIM','REVIEW','BUY','ADD','WATCH','HOLD'];
+  const acts = [...(advice.actions || [])].sort((a, b) => order.indexOf(a.action) - order.indexOf(b.action));
+  el.innerHTML = `
+    <div class="card">
+      <div class="adv-head">${advice.headline || 'Portfolio review'}</div>
+      <div class="muted" style="margin-bottom:10px">Updated ${advice.updated || ''}</div>
+      <div class="adv-market">${advice.market || ''}</div>
+    </div>
+    <div class="sec-title">Recommendations</div>
+    <div class="card">
+      ${acts.map(a => `
+        <div class="adv-item">
+          <div class="t"><span class="badge b-${a.action}">${a.action}</span> ${a.sym} <span style="font-weight:400;color:var(--dim);font-size:12px">${a.title || ''}</span></div>
+          <div class="d">${a.detail || ''}</div>
+          ${a.target ? `<div class="tgt">${a.target}</div>` : ''}
+        </div>`).join('')}
+    </div>
+    ${advice.notes ? `<div class="card"><div class="adv-head" style="font-size:14px">Notes</div><div class="adv-market" style="font-size:13px">${advice.notes}</div></div>` : ''}
+    <div class="disclaimer">${advice.disclaimer || 'Automated research by your Claude portfolio agent — a decision aid, not licensed financial advice. Verify prices with your broker before trading.'}</div>`;
+}
+
+function renderSettings() {
+  const mk = (arr, listId) => {
+    const el = document.getElementById(listId);
+    el.innerHTML = '';
+    arr.forEach((h, i) => {
+      const r = document.createElement('div');
+      r.className = 'set-row';
+      r.innerHTML = `
+        <input class="set-sym" value="${h.sym}" disabled>
+        <input type="number" step="any" value="${h.qty}" data-f="qty" data-i="${i}" placeholder="qty">
+        <input type="number" step="any" value="${h.avg}" data-f="avg" data-i="${i}" placeholder="avg">
+        <button class="del" onclick="delHolding('${listId}',${i})">✕</button>`;
+      el.appendChild(r);
+    });
+  };
+  mk(holdings.stocks, 'editStocks');
+  mk(holdings.funds, 'editFunds');
+  document.getElementById('cashIn').value = holdings.cash || 0;
+}
+
+function saveHoldings() {
+  const apply = (arr, listId) => {
+    document.querySelectorAll(`#${listId} input[data-f]`).forEach(inp => {
+      const v = parseFloat(inp.value);
+      if (!isNaN(v)) arr[+inp.dataset.i][inp.dataset.f] = v;
+    });
+  };
+  apply(holdings.stocks, 'editStocks');
+  apply(holdings.funds, 'editFunds');
+  holdings.cash = parseFloat(document.getElementById('cashIn').value) || 0;
+  localStorage.setItem(LS_HOLD, JSON.stringify(holdings));
+  render(); toast('Holdings saved');
+}
+
+function delHolding(listId, i) {
+  const arr = listId === 'editStocks' ? holdings.stocks : holdings.funds;
+  if (!confirm(`Remove ${arr[i].sym}?`)) return;
+  arr.splice(i, 1);
+  localStorage.setItem(LS_HOLD, JSON.stringify(holdings));
+  render();
+}
+
+function resetDefaults() {
+  if (!confirm('Reset holdings to the original snapshot?')) return;
+  holdings = structuredClone(DEFAULT_HOLDINGS);
+  localStorage.setItem(LS_HOLD, JSON.stringify(holdings));
+  render(); toast('Reset done');
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify({ holdings, exported: new Date().toISOString() }, null, 2)], { type:'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'sarmaya-backup.json';
+  a.click();
+}
+
+function importData(ev) {
+  const f = ev.target.files[0]; if (!f) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    try {
+      const d = JSON.parse(rd.result);
+      if (d.holdings && d.holdings.stocks) {
+        holdings = d.holdings;
+        localStorage.setItem(LS_HOLD, JSON.stringify(holdings));
+        render(); toast('Backup imported');
+      } else toast('Not a Sarmaya backup');
+    } catch { toast('Invalid file'); }
+  };
+  rd.readAsText(f);
+}
+
+function show(p) {
+  document.querySelectorAll('.page').forEach(e => e.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(e => e.classList.remove('active'));
+  document.getElementById('page-' + p).classList.add('active');
+  document.getElementById('nav-' + p).classList.add('active');
+}
+
+async function fetchJSON(url) {
+  const r = await fetch(url, { cache:'no-store' });
+  if (!r.ok) throw new Error(r.status);
+  return r.json();
+}
+
+async function refreshAll(manual) {
+  if (manual) toast('Refreshing…');
+  let got = false;
+  // 1) repo data (updated by GitHub Action)
+  for (const base of [RAW, '.']) {
+    try {
+      const p = await fetchJSON(`${base}/data/prices.json?t=${Date.now()}`);
+      if (p && p.stocks) {
+        if (!prices.updated || (p.updated >= prices.updated)) { prices = p; got = true; }
+        break;
+      }
+    } catch {}
+  }
+  for (const base of [RAW, '.']) {
+    try { const a = await fetchJSON(`${base}/data/advice.json?t=${Date.now()}`); if (a && a.updated) { advice = a; break; } } catch {}
+  }
+  for (const base of [RAW, '.']) {
+    try { const h = await fetchJSON(`${base}/data/history.json?t=${Date.now()}`); if (h) { history = h; break; } } catch {}
+  }
+  // 2) live PSX quotes via CORS proxy (best effort, stocks only)
+  if (manual) {
+    const live = await Promise.allSettled(holdings.stocks.map(async h => {
+      const u = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(`https://dps.psx.com.pk/timeseries/int/${h.sym}`);
+      const j = await fetchJSON(u);
+      if (j.data && j.data.length) return [h.sym, j.data[0][1]];
+      throw 0;
+    }));
+    let n = 0;
+    for (const r of live) if (r.status === 'fulfilled') { prices.stocks[r.value[0]] = r.value[1]; n++; }
+    if (n) { prices.updated = new Date().toISOString(); got = true; }
+    toast(n ? `Live: ${n}/${holdings.stocks.length} quotes updated` : (got ? 'Updated from repo data' : 'Offline — showing cached'));
+  }
+  localStorage.setItem(LS_PRICES, JSON.stringify(prices));
+  if (advice) localStorage.setItem(LS_ADVICE, JSON.stringify(advice));
+  localStorage.setItem(LS_HIST, JSON.stringify(history));
+  render();
+}
+
+render();
+refreshAll(false);
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+</script>
+</body>
+</html>
