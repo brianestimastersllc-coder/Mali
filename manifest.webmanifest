@@ -1,7 +1,7 @@
 {
-  "name": "Sarmaya — Portfolio Tracker",
-  "short_name": "Sarmaya",
-  "description": "PSX & mutual fund portfolio monitor with Claude advisor",
+  "name": "Mali",
+  "short_name": "Mali",
+  "description": "Personal garden journal",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

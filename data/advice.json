@@ -31,6 +31,17 @@
     { "sym": "AIAIP", "action": "REVIEW", "title": "Dust position (~Rs 2,300)", "detail": "Too small to matter. Redeem into a main fund next time you transact, just to declutter." },
     { "sym": "AKDISIF", "action": "REVIEW", "title": "Dust position (~Rs 235)", "detail": "Same — consolidate away." }
   ],
+  "allocation": {
+    "updated": "2026-07-04",
+    "rationale": "With the index at record highs after a 44% year, new money goes mostly into broad Islamic index ETFs (diversified, no single-stock risk), a Meezan Bank slice only if it dips below Rs 500, an actively managed fund leg, and a reserve slice into your cash fund as dry powder for the next correction.",
+    "items": [
+      { "sym": "MZNPETF", "name": "Meezan Pakistan ETF",        "weight": 30, "note": "Broad index exposure — the default home for new money" },
+      { "sym": "MIIETF",  "name": "Mahaana Islamic Index ETF",  "weight": 20, "note": "Second index leg, low cost" },
+      { "sym": "MEBL",    "name": "Meezan Bank",                "weight": 20, "max_price": 500, "note": "Only below Rs 500 — otherwise this slice goes to the others" },
+      { "sym": "MIF",     "name": "Meezan Islamic Fund",        "weight": 15, "note": "Actively managed equity leg" },
+      { "sym": "AICF",    "name": "Al-Ameen Islamic Cash Fund", "weight": 15, "note": "Dry powder — deploy on a 10–15% market correction" }
+    ]
+  },
   "notes": "Big picture for a 10–25 year horizon: (1) Your only real problem is AVN — a large position with deteriorating fundamentals; fix that first. (2) Direct new savings into the ETFs and equity funds rather than adding more single-stock names — you already hold 18 stocks, which is plenty. (3) Keep the ~Rs 400K in cash funds as correction ammunition. (4) Reinvest all dividends. (5) Expect and ignore 10–15% drawdowns; they are the price of the 40%+ years.",
   "disclaimer": "Automated research by your Claude portfolio agent (last reviewed 4 Jul 2026) — a decision aid, not licensed financial advice. Prices/NAVs may lag. Verify with your broker before trading."
 }

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<title>Sarmaya — Portfolio</title>
+<title>Mali</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -126,7 +126,7 @@
 </head>
 <body>
 <header>
-  <h1>Sarmaya <span>سرمایہ</span></h1>
+  <h1>Mali <span>مالی</span></h1>
   <div style="display:flex;align-items:center">
     <div id="updated"></div>
     <button id="refreshBtn" onclick="refreshAll(true)">↻</button>
@@ -152,6 +152,17 @@
     <div id="advisorContent"><div class="card muted">No advisor report yet. It will appear here after the first scheduled review.</div></div>
   </div>
 
+  <div id="page-invest" class="page">
+    <div class="card">
+      <div class="adv-head">Plan a new investment</div>
+      <p class="muted" style="margin-bottom:10px">Enter the amount you want to add. It gets divided using the allocation plan from the latest review.</p>
+      <input id="investAmt" type="number" inputmode="decimal" placeholder="Amount in Rs — e.g. 100000"
+        style="width:100%;background:var(--bg);border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:13px;font-size:16px;margin-bottom:10px">
+      <button class="btn gold" onclick="planInvest()">Divide it for me</button>
+    </div>
+    <div id="investPlan"></div>
+  </div>
+
   <div id="page-settings" class="page">
     <div class="card">
       <div class="adv-head">Holdings</div>
@@ -173,13 +184,14 @@
 
 <nav>
   <button id="nav-portfolio" class="active" onclick="show('portfolio')"><span class="ico">📊</span>Portfolio</button>
+  <button id="nav-invest" onclick="show('invest')"><span class="ico">🌱</span>Invest</button>
   <button id="nav-advisor" onclick="show('advisor')"><span class="ico">🧭</span>Advisor</button>
   <button id="nav-settings" onclick="show('settings')"><span class="ico">⚙️</span>Settings</button>
 </nav>
 <div id="toast"></div>
 
 <script>
-const RAW = 'https://raw.githubusercontent.com/brianestimastersllc-coder/Sarmaya/main';
+const RAW = 'https://raw.githubusercontent.com/brianestimastersllc-coder/Mali/main';
 const LS_HOLD = 'sarmaya-holdings-v1', LS_PRICES = 'sarmaya-prices-v1', LS_ADVICE = 'sarmaya-advice-v1', LS_HIST = 'sarmaya-history-v1';
 
 const DEFAULT_HOLDINGS = {
@@ -420,6 +432,67 @@ function importData(ev) {
     } catch { toast('Invalid file'); }
   };
   rd.readAsText(f);
+}
+
+const FALLBACK_ALLOC = {
+  updated: '2026-07-04',
+  rationale: 'Default plan: new money goes mostly into broad Islamic index ETFs, Meezan Bank on dips, an active fund leg, and a dry-powder reserve.',
+  items: [
+    { sym:'MZNPETF', name:'Meezan Pakistan ETF',       weight:30, note:'Broad index exposure — the default home for new money' },
+    { sym:'MIIETF',  name:'Mahaana Islamic Index ETF', weight:20, note:'Second index leg, low cost' },
+    { sym:'MEBL',    name:'Meezan Bank',               weight:20, max_price:500, note:'Only below Rs 500 — otherwise this slice goes to the others' },
+    { sym:'MIF',     name:'Meezan Islamic Fund',       weight:15, note:'Actively managed equity leg' },
+    { sym:'AICF',    name:'Al-Ameen Islamic Cash Fund',weight:15, note:'Dry powder — deploy on a 10–15% market correction' }
+  ]
+};
+
+function lookupPrice(sym) {
+  if (typeof prices.stocks[sym] === 'number') return { p: prices.stocks[sym], kind: 'stock' };
+  if (typeof prices.funds[sym] === 'number')  return { p: prices.funds[sym],  kind: 'fund' };
+  return null;
+}
+
+function planInvest() {
+  const amt = parseFloat(document.getElementById('investAmt').value);
+  const out = document.getElementById('investPlan');
+  if (!amt || amt <= 0) { toast('Enter an amount first'); return; }
+  const alloc = (advice && advice.allocation && advice.allocation.items) ? advice.allocation : FALLBACK_ALLOC;
+  const skipped = [];
+  const eligible = alloc.items.filter(it => {
+    const lp = lookupPrice(it.sym);
+    if (it.max_price && lp && lp.p > it.max_price) { skipped.push(it); return false; }
+    return true;
+  });
+  const tw = eligible.reduce((s, it) => s + it.weight, 0);
+  let leftover = 0;
+  const rows = eligible.map(it => {
+    const share = amt * it.weight / tw;
+    const lp = lookupPrice(it.sym);
+    let unitsTxt = '';
+    let spend = share;
+    if (lp && lp.kind === 'stock') {
+      const units = Math.floor(share / lp.p);
+      spend = units * lp.p;
+      leftover += share - spend;
+      unitsTxt = `≈ ${fmt0.format(units)} shares @ ${fmt2.format(lp.p)}`;
+    } else if (lp) {
+      unitsTxt = `≈ ${fmt2.format(share / lp.p)} units @ NAV ${fmt2.format(lp.p)}`;
+    }
+    return { it, share, spend, unitsTxt, pct: it.weight / tw * 100 };
+  });
+  out.innerHTML = `
+    <div class="card">
+      <div class="adv-head" style="font-size:15px">Suggested split of ${rs(amt)}</div>
+      ${rows.map(r => `
+        <div class="adv-item" style="border-bottom:1px solid var(--line);padding-bottom:8px">
+          <div class="t">${r.it.sym} <span style="font-weight:400;color:var(--dim);font-size:12px">${r.it.name || ''}</span>
+            <span style="margin-left:auto;color:var(--gold);font-weight:700">${rs(r.spend)}</span></div>
+          <div class="d">${r.pct.toFixed(0)}% — ${r.unitsTxt}${r.it.note ? '<br>' + r.it.note : ''}</div>
+        </div>`).join('')}
+      ${leftover >= 1 ? `<div class="d muted" style="margin-top:8px">~${rs(leftover)} left from rounding whole shares — add it to the fund/cash slice.</div>` : ''}
+      ${skipped.length ? `<div class="d muted" style="margin-top:6px">Skipped: ${skipped.map(s => `${s.sym} (above Rs ${s.max_price})`).join(', ')} — weight moved to the rest.</div>` : ''}
+      <div class="advnote" style="margin-top:10px">${alloc.rationale || ''}<br><span class="muted">Plan from review dated ${alloc.updated || '—'}. Verify prices with your broker before ordering.</span></div>
+    </div>`;
 }
 
 function show(p) {
