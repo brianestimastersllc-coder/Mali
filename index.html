@@ -327,15 +327,30 @@ function render() {
     <div class="chip">Stocks<b>${rs(sVal)}</b></div>
     <div class="chip">Funds<b>${rs(fVal)}</b></div>
     <div class="chip">Cash<b>${rs(cash)}</b></div>`;
-  document.getElementById('updated').innerHTML = prices.updated
-    ? `prices as of<br>${new Date(prices.updated).toLocaleString('en-PK', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })}`
-    : 'prices: cached';
+  renderUpdated();
   renderList(document.getElementById('stockList'), 'stock', holdings.stocks);
   renderList(document.getElementById('fundList'), 'fund', holdings.funds);
   renderTrend();
   renderAdvisor();
   renderSettings();
 }
+
+function fmtAge(iso) {
+  const mins = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 60000));
+  return mins < 1 ? 'just now'
+    : mins < 60 ? `${mins} min ago`
+    : mins < 1440 ? `${Math.floor(mins / 60)} hr ${mins % 60} min ago`
+    : `${Math.floor(mins / 1440)}+ days ago`;
+}
+function renderUpdated() {
+  const el = document.getElementById('updated');
+  if (!prices.updated) { el.innerHTML = 'prices: cached'; return; }
+  const d = new Date(prices.updated);
+  const age = fmtAge(prices.updated);
+  const src = prices.source === 'live' ? 'live PSX' : 'auto-fetched';
+  el.innerHTML = `${src} · ${age}<br>${d.toLocaleString('en-PK', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })}`;
+}
+setInterval(renderUpdated, 30000);
 
 function renderAdvisor() {
   const el = document.getElementById('advisorContent');
@@ -502,10 +517,29 @@ function show(p) {
   document.getElementById('nav-' + p).classList.add('active');
 }
 
-async function fetchJSON(url) {
-  const r = await fetch(url, { cache:'no-store' });
-  if (!r.ok) throw new Error(r.status);
-  return r.json();
+async function fetchJSON(url, ms = 8000) {
+  const c = new AbortController();
+  const t = setTimeout(() => c.abort(), ms);
+  try {
+    const r = await fetch(url, { cache:'no-store', signal:c.signal });
+    if (!r.ok) throw new Error(r.status);
+    return await r.json();
+  } finally { clearTimeout(t); }
+}
+
+const PROXIES = [
+  u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
+  u => 'https://api.codetabs.com/v1/proxy?quest=' + u
+];
+async function fetchLiveQuote(sym) {
+  const target = `https://dps.psx.com.pk/timeseries/int/${sym}`;
+  for (const wrap of PROXIES) {
+    try {
+      const j = await fetchJSON(wrap(target), 7000);
+      if (j.data && j.data.length) return j.data[0][1];
+    } catch {}
+  }
+  throw 0;
 }
 
 async function refreshAll(manual) {
@@ -516,7 +550,7 @@ async function refreshAll(manual) {
     try {
       const p = await fetchJSON(`${base}/data/prices.json?t=${Date.now()}`);
       if (p && p.stocks) {
-        if (!prices.updated || (p.updated >= prices.updated)) { prices = p; got = true; }
+        if (!prices.updated || (p.updated >= prices.updated)) { p.source = 'repo'; prices = p; got = true; }
         break;
       }
     } catch {}
@@ -529,16 +563,13 @@ async function refreshAll(manual) {
   }
   // 2) live PSX quotes via CORS proxy (best effort, stocks only)
   if (manual) {
-    const live = await Promise.allSettled(holdings.stocks.map(async h => {
-      const u = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(`https://dps.psx.com.pk/timeseries/int/${h.sym}`);
-      const j = await fetchJSON(u);
-      if (j.data && j.data.length) return [h.sym, j.data[0][1]];
-      throw 0;
-    }));
+    const live = await Promise.allSettled(holdings.stocks.map(async h => [h.sym, await fetchLiveQuote(h.sym)]));
     let n = 0;
     for (const r of live) if (r.status === 'fulfilled') { prices.stocks[r.value[0]] = r.value[1]; n++; }
-    if (n) { prices.updated = new Date().toISOString(); got = true; }
-    toast(n ? `Live: ${n}/${holdings.stocks.length} quotes updated` : (got ? 'Updated from repo data' : 'Offline — showing cached'));
+    if (n) { prices.updated = new Date().toISOString(); prices.source = 'live'; got = true; }
+    toast(n ? `Live: ${n}/${holdings.stocks.length} quotes updated`
+            : (got ? `No live feed — auto-fetched data from ${fmtAge(prices.updated)}`
+                   : 'Offline — showing cached'));
   }
   localStorage.setItem(LS_PRICES, JSON.stringify(prices));
   if (advice) localStorage.setItem(LS_ADVICE, JSON.stringify(advice));

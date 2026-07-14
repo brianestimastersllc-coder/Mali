@@ -1,9 +1,9 @@
 name: Update prices
 on:
   schedule:
-    # PSX trades Mon-Fri 09:30-15:30 PKT (04:30-10:30 UTC): hourly during the session,
+    # PSX trades Mon-Fri 09:30-15:30 PKT (04:30-10:30 UTC): every 10 min during the session,
     # plus 16:30 UTC (21:30 PKT) daily to catch evening MUFAP NAV publication.
-    - cron: '45 4-10 * * 1-5'
+    - cron: '*/10 4-10 * * 1-5'
     - cron: '30 16 * * *'
   workflow_dispatch:
 permissions:
