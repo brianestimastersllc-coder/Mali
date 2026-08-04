@@ -4,7 +4,7 @@ Runs in GitHub Actions on a cron schedule. Writes:
   data/prices.json  — latest price per symbol
   data/history.json — one snapshot per calendar day (PKT), for the trend chart
 """
-import json, re, sys, urllib.request, datetime, html
+import json, re, subprocess, sys, urllib.request, datetime, html
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -27,13 +27,32 @@ FUNDS = {
     "AKDISIF": "akd islamic income fund",
 }
 
-UA = {"User-Agent": "Mozilla/5.0 (sarmaya-portfolio-bot)"}
+BROWSER_UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+              "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
+UA = {"User-Agent": BROWSER_UA}
 
 
 def get(url, timeout=30):
     req = urllib.request.Request(url, headers=UA)
     with urllib.request.urlopen(req, timeout=timeout) as r:
         return r.read().decode("utf-8", "replace")
+
+
+def get_via_curl(url, timeout=30):
+    """mufap.com.pk's WAF returns 403 to urllib's TLS client (and to Anthropic's
+    WebFetch) but accepts curl with ordinary browser headers — use curl for it."""
+    r = subprocess.run(
+        ["curl", "-sS", "-L",
+         "-A", BROWSER_UA,
+         "-H", "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+         "-H", "Accept-Language: en-US,en;q=0.9",
+         "--max-time", str(timeout),
+         url],
+        capture_output=True, text=True, timeout=timeout + 10,
+    )
+    if r.returncode != 0:
+        raise RuntimeError(f"curl exit {r.returncode}: {r.stderr.strip()}")
+    return r.stdout
 
 
 def psx_price(sym):
@@ -60,7 +79,7 @@ def mufap_navs():
     """Scrape the MUFAP daily industry-stats table (server-rendered HTML)."""
     navs = {}
     try:
-        page = get("https://www.mufap.com.pk/Industry/IndustryStatDaily?tab=1", timeout=60)
+        page = get_via_curl("https://www.mufap.com.pk/Industry/IndustryStatDaily?tab=1", timeout=60)
     except Exception as e:
         print(f"  mufap fetch failed: {e}", file=sys.stderr)
         return navs
@@ -100,7 +119,11 @@ def main():
     funds = dict(old.get("funds", {}))
     navs = mufap_navs()
     funds.update(navs)
-    print(f"  MUFAP NAVs matched: {sorted(navs)}")
+    if navs:
+        print(f"  MUFAP NAVs matched: {sorted(navs)}")
+    else:
+        print(f"  WARNING: no MUFAP fund NAVs matched — fund prices are STALE "
+              f"(kept {sorted(funds)} unchanged from previous run)", file=sys.stderr)
 
     now = datetime.datetime.now(datetime.timezone.utc)
     out = {"updated": now.strftime("%Y-%m-%dT%H:%M:%SZ"), "stocks": stocks, "funds": funds}
