@@ -20,6 +20,8 @@ jobs:
         with:
           python-version: '3.12'
       - run: python scripts/fetch_prices.py
+        env:
+          CRON_SCHEDULE: ${{ github.event.schedule }}
       - name: Commit updated data
         run: |
           git config user.name "sarmaya-bot"

@@ -4,7 +4,7 @@ Runs in GitHub Actions on a cron schedule. Writes:
   data/prices.json  — latest price per symbol
   data/history.json — one snapshot per calendar day (PKT), for the trend chart
 """
-import json, re, subprocess, sys, urllib.request, datetime, html
+import json, os, re, subprocess, sys, time, urllib.request, datetime, html
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -30,6 +30,20 @@ FUNDS = {
 BROWSER_UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
               "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
 UA = {"User-Agent": BROWSER_UA}
+
+# MUFAP publishes fund NAVs once per business day (evening), not intraday like PSX
+# stocks. The 4-10 UTC cron runs every 10 min just for stock prices; only the
+# 16:30 UTC cron (and manual runs) should hit MUFAP's heavy stats page. Scraping
+# it ~40x/day on the stock cron was almost certainly what got the GitHub Actions
+# IP range rate/reputation-blocked by MUFAP's WAF for a full week straight — a
+# plain curl from an unrelated network fetches the same page fine.
+FUND_UPDATE_CRON = "30 16 * * *"
+
+
+def should_fetch_funds():
+    if os.environ.get("GITHUB_EVENT_NAME", "") != "schedule":
+        return True  # workflow_dispatch or local run
+    return os.environ.get("CRON_SCHEDULE", "") == FUND_UPDATE_CRON
 
 
 def get(url, timeout=30):
@@ -75,14 +89,8 @@ def normalize(s):
     return re.sub(r"[^a-z0-9 ]", "", s.lower()).replace("  ", " ")
 
 
-def mufap_navs():
-    """Scrape the MUFAP daily industry-stats table (server-rendered HTML)."""
+def _parse_mufap_navs(page):
     navs = {}
-    try:
-        page = get_via_curl("https://www.mufap.com.pk/Industry/IndustryStatDaily?tab=1", timeout=60)
-    except Exception as e:
-        print(f"  mufap fetch failed: {e}", file=sys.stderr)
-        return navs
     rows = re.split(r"<tr[^>]*>", page)
     for row in rows:
         cells = [html.unescape(re.sub(r"<[^>]+>", " ", c)).strip()
@@ -104,6 +112,28 @@ def mufap_navs():
     return navs
 
 
+def mufap_navs():
+    """Scrape the MUFAP daily industry-stats table (server-rendered HTML).
+
+    Retries once: a WAF block can come back as a normal HTTP 200 with an
+    interstitial/challenge page instead of a curl error, which would
+    otherwise parse to zero matches on the first try.
+    """
+    url = "https://www.mufap.com.pk/Industry/IndustryStatDaily?tab=1"
+    for attempt in (1, 2):
+        try:
+            page = get_via_curl(url, timeout=60)
+            navs = _parse_mufap_navs(page)
+            if navs:
+                return navs
+            print(f"  mufap fetch returned no matches (attempt {attempt})", file=sys.stderr)
+        except Exception as e:
+            print(f"  mufap fetch failed (attempt {attempt}): {e}", file=sys.stderr)
+        if attempt == 1:
+            time.sleep(15)
+    return {}
+
+
 def main():
     prices_path = DATA / "prices.json"
     hist_path = DATA / "history.json"
@@ -116,21 +146,39 @@ def main():
             stocks[s] = p
         print(f"  {s}: {p}")
 
-    funds = dict(old.get("funds", {}))
-    navs = mufap_navs()
-    funds.update(navs)
-    if navs:
-        print(f"  MUFAP NAVs matched: {sorted(navs)}")
-    else:
-        print(f"  WARNING: no MUFAP fund NAVs matched — fund prices are STALE "
-              f"(kept {sorted(funds)} unchanged from previous run)", file=sys.stderr)
-
     now = datetime.datetime.now(datetime.timezone.utc)
-    out = {"updated": now.strftime("%Y-%m-%dT%H:%M:%SZ"), "stocks": stocks, "funds": funds}
+    pkt_day = (now + datetime.timedelta(hours=5)).strftime("%Y-%m-%d")
+
+    funds = dict(old.get("funds", {}))
+    funds_updated = old.get("funds_updated")
+    if should_fetch_funds():
+        navs = mufap_navs()
+        funds.update(navs)
+        if navs:
+            print(f"  MUFAP NAVs matched: {sorted(navs)}")
+            funds_updated = pkt_day
+        else:
+            stale_days = None
+            if funds_updated:
+                try:
+                    stale_days = (datetime.date.fromisoformat(pkt_day)
+                                  - datetime.date.fromisoformat(funds_updated)).days
+                except ValueError:
+                    pass
+            msg = (f"no MUFAP fund NAVs matched — fund prices are STALE "
+                   f"(kept {sorted(funds)} unchanged since {funds_updated or 'unknown'})")
+            if stale_days is not None and stale_days >= 2:
+                print(f"::error::MUFAP scrape has failed for {stale_days} days straight — {msg}")
+            else:
+                print(f"::warning::{msg}")
+    else:
+        print("  skipping MUFAP fetch (not the daily fund-update run)")
+
+    out = {"updated": now.strftime("%Y-%m-%dT%H:%M:%SZ"), "stocks": stocks, "funds": funds,
+           "funds_updated": funds_updated}
     prices_path.write_text(json.dumps(out, indent=2) + "\n")
 
     # daily snapshot keyed by PKT date (UTC+5)
-    pkt_day = (now + datetime.timedelta(hours=5)).strftime("%Y-%m-%d")
     hist = json.loads(hist_path.read_text()) if hist_path.exists() else {}
     hist[pkt_day] = {"stocks": stocks, "funds": funds}
     hist = dict(sorted(hist.items())[-730:])  # keep ~2 years
