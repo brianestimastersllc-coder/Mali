@@ -1,24 +1,24 @@
 {
-  "updated": "2026-08-12T09:41:49Z",
+  "updated": "2026-08-12T10:45:34Z",
   "stocks": {
-    "AVN": 32.5,
-    "BWCL": 501.5,
+    "AVN": 32.36,
+    "BWCL": 501.53,
     "CPHL": 72.95,
-    "FABL": 99.5,
-    "NATF": 394.02,
-    "GLAXO": 346.95,
-    "AIRLINK": 135.94,
-    "MEBL": 591.82,
-    "EFERT": 186.7,
-    "MUGHAL": 80.86,
-    "MZNPETF": 17.97,
-    "GHGL": 41.5,
-    "SEARL": 90.5,
-    "FATIMA": 164.76,
-    "MIIETF": 16.88,
-    "FFL": 16.28,
-    "DCR": 39.1,
-    "UPFL": 25390.0
+    "FABL": 99.56,
+    "NATF": 396.15,
+    "GLAXO": 345.43,
+    "AIRLINK": 136.09,
+    "MEBL": 591.13,
+    "EFERT": 185.87,
+    "MUGHAL": 81.0,
+    "MZNPETF": 18.0,
+    "GHGL": 41.47,
+    "SEARL": 90.62,
+    "FATIMA": 164.61,
+    "MIIETF": 16.91,
+    "FFL": 16.23,
+    "DCR": 39.18,
+    "UPFL": 25387.0
   },
   "funds": {
     "ASSF": 489.39,
@@ -29,5 +29,6 @@
     "AICF": 102.4254,
     "MICF": 108.2042,
     "AKDISIF": 53.4904
-  }
+  },
+  "funds_updated": null
 }
