@@ -198,15 +198,15 @@ const DEFAULT_HOLDINGS = {
   stocks: [
     { sym:'AVN',     name:'Avanceon Ltd',              qty:24500, avg:45.08 },
     { sym:'BWCL',    name:'Bestway Cement',            qty:1700,  avg:461.30 },
-    { sym:'CPHL',    name:'Citi Pharma',               qty:9300,  avg:85.26 },
+    { sym:'CPHL',    name:'Citi Pharma',               qty:10000, avg:84.37 },
     { sym:'FABL',    name:'Faysal Bank',               qty:6000,  avg:67.55 },
     { sym:'NATF',    name:'National Foods',            qty:1400,  avg:360.38 },
     { sym:'GLAXO',   name:'GlaxoSmithKline Pakistan',  qty:1400,  avg:354.39 },
     { sym:'AIRLINK', name:'Air Link Communication',    qty:3300,  avg:146.55 },
     { sym:'MEBL',    name:'Meezan Bank',               qty:900,   avg:363.80 },
-    { sym:'EFERT',   name:'Engro Fertilizers',         qty:2600,  avg:198.94 },
+    { sym:'EFERT',   name:'Engro Fertilizers',         qty:2800,  avg:197.97 },
     { sym:'MUGHAL',  name:'Mughal Iron & Steel',       qty:3900,  avg:65.54 },
-    { sym:'MZNPETF', name:'Meezan Pakistan ETF',       qty:21000, avg:19.08 },
+    { sym:'MZNPETF', name:'Meezan Pakistan ETF',       qty:25000, avg:18.93 },
     { sym:'GHGL',    name:'Ghani Glass',               qty:6100,  avg:34.73 },
     { sym:'SEARL',   name:'The Searle Company',        qty:2335,  avg:82.90 },
     { sym:'FATIMA',  name:'Fatima Fertilizer',         qty:1200,  avg:107.50 },
@@ -224,7 +224,7 @@ const DEFAULT_HOLDINGS = {
     { sym:'AICF',    name:'Al-Ameen Islamic Cash Fund',       qty:1993.24,  avg:101.53 },
     { sym:'MICF',    name:'Mahaana Islamic Cash Fund',        qty:2795.44,  avg:107.32 }
   ],
-  cash: 4278.69
+  cash: 2250
 };
 
 let holdings = JSON.parse(localStorage.getItem(LS_HOLD) || 'null') || structuredClone(DEFAULT_HOLDINGS);
