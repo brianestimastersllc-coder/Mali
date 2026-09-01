@@ -52,10 +52,31 @@
   .chip b { display:block; color:var(--txt); font-size:14px; margin-top:2px; }
   #trend { width:100%; height:70px; margin-top:12px; display:none; }
   .row {
-    display:flex; align-items:center; justify-content:space-between;
+    display:flex; flex-direction:column;
     padding:12px 14px; background:var(--card); border:1px solid var(--line);
     border-radius:14px; margin-bottom:8px; cursor:pointer;
   }
+  .row-main { display:flex; align-items:center; justify-content:space-between; }
+  .entry-bar {
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    margin-top:9px; padding-top:8px; border-top:1px dashed var(--line); font-size:11.5px;
+  }
+  .entry-bar .ent-l { color:var(--dim); }
+  .entry-bar .ent-l b { color:var(--txt); font-weight:600; }
+  .entry-bar .mine { color:var(--gold); font-size:9px; border:1px solid var(--gold); border-radius:4px; padding:0 4px; margin-left:5px; }
+  .ez { font-weight:700; font-size:10px; padding:2px 8px; border-radius:6px; letter-spacing:.3px; white-space:nowrap; flex-shrink:0; }
+  .ez-in { background:rgba(52,199,123,.18); color:var(--green); }
+  .ez-near { background:rgba(255,159,67,.16); color:var(--orange); }
+  .ez-above { background:rgba(139,150,176,.14); color:var(--dim); }
+  .ez-exit { background:rgba(239,83,80,.16); color:var(--red); }
+  .entry-edit { margin-top:10px; padding-top:9px; border-top:1px solid var(--line); }
+  .ee-row { display:flex; justify-content:space-between; font-size:12.5px; padding:2px 0; }
+  .ee-row span:first-child { color:var(--dim); }
+  .ee-note { font-size:12px; color:var(--dim); line-height:1.5; margin:5px 0 8px; }
+  .ee-your { display:flex; gap:6px; align-items:center; }
+  .ee-your input { flex:1; background:var(--bg); border:1px solid var(--line); color:var(--txt); border-radius:8px; padding:7px; font-size:13px; min-width:0; }
+  .ee-btn { background:var(--card); border:1px solid var(--line); color:var(--gold); border-radius:8px; padding:7px 10px; font-size:12px; white-space:nowrap; }
+  #buyzoneLine { margin-top:11px; font-size:12px; color:var(--gold); }
   .row-l { min-width:0; }
   .sym { font-weight:700; font-size:15px; display:flex; align-items:center; gap:6px; }
   .name { font-size:11.5px; color:var(--dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px; }
@@ -140,6 +161,7 @@
       <div class="total-val" id="totalVal">—</div>
       <div class="pl" id="totalPL"></div>
       <div class="chips" id="chips"></div>
+      <div id="buyzoneLine"></div>
       <svg id="trend" preserveAspectRatio="none"></svg>
     </div>
     <div class="sec-title">Stocks (PSX)</div>
@@ -192,7 +214,7 @@
 
 <script>
 const RAW = 'https://raw.githubusercontent.com/brianestimastersllc-coder/Mali/main';
-const LS_HOLD = 'sarmaya-holdings-v1', LS_PRICES = 'sarmaya-prices-v1', LS_ADVICE = 'sarmaya-advice-v1', LS_HIST = 'sarmaya-history-v1';
+const LS_HOLD = 'sarmaya-holdings-v1', LS_PRICES = 'sarmaya-prices-v1', LS_ADVICE = 'sarmaya-advice-v1', LS_HIST = 'sarmaya-history-v1', LS_ENTRY = 'mali-entry-overrides-v1';
 
 const DEFAULT_HOLDINGS = {
   stocks: [
@@ -231,6 +253,7 @@ let holdings = JSON.parse(localStorage.getItem(LS_HOLD) || 'null') || structured
 let prices   = JSON.parse(localStorage.getItem(LS_PRICES) || 'null') || { updated:null, stocks:{}, funds:{} };
 let advice   = JSON.parse(localStorage.getItem(LS_ADVICE) || 'null');
 let history  = JSON.parse(localStorage.getItem(LS_HIST) || 'null') || {};
+let entryOverrides = JSON.parse(localStorage.getItem(LS_ENTRY) || '{}');
 
 const fmt0 = new Intl.NumberFormat('en-PK', { maximumFractionDigits:0 });
 const fmt2 = new Intl.NumberFormat('en-PK', { maximumFractionDigits:2, minimumFractionDigits:2 });
@@ -258,6 +281,41 @@ function adviceFor(sym) {
   return advice.actions.find(a => a.sym === sym) || null;
 }
 
+// ---- Entry / buy-zone levels ----
+function entryData(sym) {
+  return (advice && advice.entries && advice.entries.levels && advice.entries.levels[sym]) || null;
+}
+function hasOverride(sym) { return Object.prototype.hasOwnProperty.call(entryOverrides, sym); }
+function effEntry(sym) {                       // the level actually used: your override wins, else Mali's
+  if (hasOverride(sym)) return entryOverrides[sym];
+  const e = entryData(sym);
+  return (e && typeof e.entry === 'number') ? e.entry : null;
+}
+function entryZone(sym, price) {
+  const e = entryData(sym);
+  // Mali marks this a no-add name (e.g. AVN exit) and you haven't set your own level
+  if (e && e.entry === null && !hasOverride(sym)) return { z:'exit', label:(e.exitLabel || 'Not an add') };
+  const lvl = effEntry(sym);
+  if (lvl == null || !price) return null;
+  const gap = (price - lvl) / lvl * 100;
+  if (price <= lvl)  return { z:'in',    label:'IN BUY ZONE', gap };
+  if (gap <= 5)      return { z:'near',  label:`${gap.toFixed(1)}% away`, gap };
+  return               { z:'above', label:`${gap.toFixed(0)}% above`, gap };
+}
+function saveEntryOverride(sym) {
+  const el = document.getElementById('eo-' + sym);
+  const v = parseFloat(el && el.value);
+  if (isNaN(v) || v <= 0) { toast('Enter a valid level'); return; }
+  entryOverrides[sym] = v;
+  localStorage.setItem(LS_ENTRY, JSON.stringify(entryOverrides));
+  render(); toast(`${sym} entry set to Rs ${fmt2.format(v)}`);
+}
+function resetEntryOverride(sym) {
+  delete entryOverrides[sym];
+  localStorage.setItem(LS_ENTRY, JSON.stringify(entryOverrides));
+  render(); toast(`${sym} back to Mali's level`);
+}
+
 function renderList(el, kind, arr) {
   el.innerHTML = '';
   const sorted = [...arr].sort((a, b) => priceOf(kind, b) * b.qty - priceOf(kind, a) * a.qty);
@@ -265,19 +323,61 @@ function renderList(el, kind, arr) {
     const p = priceOf(kind, h), val = p * h.qty, inv = h.avg * h.qty;
     const pl = val - inv, plp = inv ? pl / inv * 100 : 0;
     const adv = adviceFor(h.sym);
+    // entry / buy-zone strip (stocks & ETFs only)
+    let entryBar = '';
+    if (kind === 'stock') {
+      const z = entryZone(h.sym, hasPrice(kind, h) ? p : null);
+      if (z) {
+        if (z.z === 'exit') {
+          entryBar = `<div class="entry-bar"><span class="ent-l">🚫 ${z.label}</span><span class="ez ez-exit">NO ADD</span></div>`;
+        } else {
+          const e = entryData(h.sym), lvl = effEntry(h.sym);
+          const add = e && typeof e.add === 'number' ? e.add : null;
+          entryBar = `<div class="entry-bar">
+            <span class="ent-l">🎯 Entry ≤ <b>${fmt2.format(lvl)}</b>${add ? ` · load < ${fmt2.format(add)}` : ''}${hasOverride(h.sym) ? '<span class="mine">yours</span>' : ''}</span>
+            <span class="ez ez-${z.z}">${z.label}</span></div>`;
+        }
+      }
+    }
+
     const row = document.createElement('div');
     row.className = 'row';
     row.innerHTML = `
-      <div class="row-l">
-        <div class="sym">${h.sym}${adv ? ` <span class="badge b-${adv.action}">${adv.action}</span>` : ''}</div>
-        <div class="name">${h.name}</div>
-        <div class="qty">${fmt2.format(h.qty).replace(/\.00$/,'')} @ ${fmt2.format(h.avg)}</div>
+      <div class="row-main">
+        <div class="row-l">
+          <div class="sym">${h.sym}${adv ? ` <span class="badge b-${adv.action}">${adv.action}</span>` : ''}</div>
+          <div class="name">${h.name}</div>
+          <div class="qty">${fmt2.format(h.qty).replace(/\.00$/,'')} @ ${fmt2.format(h.avg)}</div>
+        </div>
+        <div class="row-r">
+          <div class="val">${rs(val)}</div>
+          <div class="plpct ${cls(plp)}">${sign(plp)}${plp.toFixed(1)}% <small style="font-weight:400">(${sign(pl)}${fmt0.format(pl)})</small></div>
+          <div class="price">${hasPrice(kind, h) ? fmt2.format(p) : 'no live price'}</div>
+        </div>
       </div>
-      <div class="row-r">
-        <div class="val">${rs(val)}</div>
-        <div class="plpct ${cls(plp)}">${sign(plp)}${plp.toFixed(1)}% <small style="font-weight:400">(${sign(pl)}${fmt0.format(pl)})</small></div>
-        <div class="price">${hasPrice(kind, h) ? fmt2.format(p) : 'no live price'}</div>
-      </div>`;
+      ${entryBar}`;
+
+    // editable entry panel inside the expandable detail (stocks only)
+    let entryEdit = '';
+    if (kind === 'stock') {
+      const e = entryData(h.sym);
+      const agent = e ? e.entry : undefined;
+      const add = e && typeof e.add === 'number' ? e.add : null;
+      const own = hasOverride(h.sym);
+      entryEdit = `
+        <div class="entry-edit">
+          <div class="ee-row"><span>Mali's entry</span><span>${agent == null ? '— (not a buy)' : '≤ Rs ' + fmt2.format(agent)}</span></div>
+          ${add != null ? `<div class="ee-row"><span>Load-more level</span><span>Rs ${fmt2.format(add)}</span></div>` : ''}
+          ${own ? `<div class="ee-row"><span>Your level</span><span style="color:var(--gold)">Rs ${fmt2.format(entryOverrides[h.sym])}</span></div>` : ''}
+          ${e && e.note ? `<div class="ee-note">${e.note}</div>` : ''}
+          <div class="ee-your">
+            <input type="number" step="any" inputmode="decimal" id="eo-${h.sym}" placeholder="set your own level" value="${own ? entryOverrides[h.sym] : ''}">
+            <button class="ee-btn" onclick="saveEntryOverride('${h.sym}')">Set</button>
+            ${own ? `<button class="ee-btn" onclick="resetEntryOverride('${h.sym}')">Use Mali's</button>` : ''}
+          </div>
+        </div>`;
+    }
+
     const det = document.createElement('div');
     det.className = 'detail';
     det.innerHTML = `
@@ -287,8 +387,9 @@ function renderList(el, kind, arr) {
         <tr><td>Gain / loss</td><td class="${cls(pl)}">${sign(pl)}${fmt0.format(pl)} (${sign(plp)}${plp.toFixed(2)}%)</td></tr>
         <tr><td>Last price</td><td>${hasPrice(kind, h) ? fmt2.format(p) : '—'}</td></tr>
       </table>
-      ${adv ? `<div class="advnote"><b>${adv.action}</b> — ${adv.detail}${adv.target ? `<div style="color:var(--gold);margin-top:4px">${adv.target}</div>` : ''}</div>` : ''}`;
-    row.onclick = () => det.classList.toggle('open');
+      ${adv ? `<div class="advnote"><b>${adv.action}</b> — ${adv.detail}${adv.target ? `<div style="color:var(--gold);margin-top:4px">${adv.target}</div>` : ''}</div>` : ''}
+      ${entryEdit}`;
+    row.onclick = (ev) => { if (ev.target.closest('.entry-edit')) return; det.classList.toggle('open'); };
     el.appendChild(row); el.appendChild(det);
   }
 }
@@ -325,6 +426,15 @@ function render() {
     <div class="chip">Stocks<b>${rs(sVal)}</b></div>
     <div class="chip">Funds<b>${rs(fVal)}</b></div>
     <div class="chip">Cash<b>${rs(cash)}</b></div>`;
+  let bz = 0, near = 0;
+  for (const h of holdings.stocks) {
+    const z = entryZone(h.sym, hasPrice('stock', h) ? priceOf('stock', h) : null);
+    if (z && z.z === 'in') bz++; else if (z && z.z === 'near') near++;
+  }
+  const bl = document.getElementById('buyzoneLine');
+  bl.innerHTML = bz ? `🎯 ${bz} holding${bz > 1 ? 's' : ''} in buy zone${near ? `, ${near} near` : ''} — tap a stock to see its level`
+    : near ? `🎯 ${near} holding${near > 1 ? 's' : ''} near entry — tap to see levels`
+    : '';
   renderUpdated();
   renderList(document.getElementById('stockList'), 'stock', holdings.stocks);
   renderList(document.getElementById('fundList'), 'fund', holdings.funds);
