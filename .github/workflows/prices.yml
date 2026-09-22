@@ -19,6 +19,35 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Check if this run may need the fund-NAV headless-browser fallback
+        id: fundcheck
+        # Mirrors scripts/fetch_prices.py's should_fetch_funds() cheaply in shell,
+        # so the frequent stock-only runs can skip installing a browser. Defaults
+        # to "need=true" on any uncertainty (missing/unparsable date) rather than
+        # risk silently skipping the install on a run that actually needs it.
+        env:
+          CRON_SCHEDULE: ${{ github.event.schedule }}
+          GH_EVENT_NAME: ${{ github.event_name }}
+        run: |
+          need=true
+          if [ "$CRON_SCHEDULE" != "30 16 * * *" ] && [ "$GH_EVENT_NAME" = "schedule" ]; then
+            fu=$(grep -o '"funds_updated": *"[0-9-]\{10\}"' data/prices.json | grep -o '[0-9-]\{10\}' || true)
+            today=$(TZ=Asia/Karachi date +%Y-%m-%d)
+            if [ -n "$fu" ]; then
+              fu_s=$(date -d "$fu" +%s 2>/dev/null || echo "")
+              today_s=$(date -d "$today" +%s 2>/dev/null || echo "")
+              if [ -n "$fu_s" ] && [ -n "$today_s" ]; then
+                days=$(( (today_s - fu_s) / 86400 ))
+                [ "$days" -lt 1 ] && need=false
+              fi
+            fi
+          fi
+          echo "need=$need" >> "$GITHUB_OUTPUT"
+      - name: Install headless-browser fallback for MUFAP's Cloudflare challenge
+        if: steps.fundcheck.outputs.need == 'true'
+        run: |
+          pip install playwright
+          playwright install --with-deps chromium
       - run: python scripts/fetch_prices.py
         env:
           CRON_SCHEDULE: ${{ github.event.schedule }}

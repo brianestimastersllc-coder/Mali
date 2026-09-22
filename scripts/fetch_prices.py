@@ -33,17 +33,34 @@ UA = {"User-Agent": BROWSER_UA}
 
 # MUFAP publishes fund NAVs once per business day (evening), not intraday like PSX
 # stocks. The 4-10 UTC cron runs every 10 min just for stock prices; only the
-# 16:30 UTC cron (and manual runs) should hit MUFAP's heavy stats page. Scraping
-# it ~40x/day on the stock cron was almost certainly what got the GitHub Actions
-# IP range rate/reputation-blocked by MUFAP's WAF for a full week straight — a
-# plain curl from an unrelated network fetches the same page fine.
+# 16:30 UTC cron (and manual runs) should hit MUFAP's heavy stats page.
 FUND_UPDATE_CRON = "30 16 * * *"
 
 
-def should_fetch_funds():
+def should_fetch_funds(funds_updated, pkt_day):
+    """True when this run should attempt the (expensive) MUFAP fetch.
+
+    Besides the intended once-daily trigger, also self-heals when funds_updated
+    is missing or >=1 PKT day stale: GitHub Actions has been delaying/dropping a
+    large fraction of this repo's scheduled runs since ~2026-08-24 (confirmed via
+    the Actions API — the stock cron alone dropped from ~36 runs/day to 1-3/day),
+    so the one specific 16:30 UTC firing frequently never happens at all. Without
+    this, funds_updated can freeze indefinitely even after the Cloudflare fix
+    below, because no run ever has CRON_SCHEDULE == FUND_UPDATE_CRON that day.
+    Whichever run actually survives GitHub's throttling still catches it up.
+    """
     if os.environ.get("GITHUB_EVENT_NAME", "") != "schedule":
         return True  # workflow_dispatch or local run
-    return os.environ.get("CRON_SCHEDULE", "") == FUND_UPDATE_CRON
+    if os.environ.get("CRON_SCHEDULE", "") == FUND_UPDATE_CRON:
+        return True
+    if not funds_updated:
+        return True
+    try:
+        stale_days = (datetime.date.fromisoformat(pkt_day)
+                      - datetime.date.fromisoformat(funds_updated)).days
+    except ValueError:
+        return True
+    return stale_days >= 1
 
 
 def get(url, timeout=30):
@@ -112,12 +129,54 @@ def _parse_mufap_navs(page):
     return navs
 
 
+def mufap_navs_playwright(url, timeout_ms=45000):
+    """Fetch the MUFAP page with a real headless browser.
+
+    Confirmed 2026-09-22: curl (even with ordinary browser headers, from a
+    network unrelated to GitHub Actions) gets HTTP 403 with header
+    'Cf-Mitigated: challenge' and a 'Just a moment...' Cloudflare Managed
+    Challenge page — this is a JS-execution challenge, not a simple UA/IP
+    block, so no amount of header tuning fixes it. A real browser (verified
+    interactively) passes it automatically within a few seconds, same as any
+    ordinary visitor; headless Chromium does the same. Only called as a
+    fallback after the cheap curl attempts fail.
+    """
+    from playwright.sync_api import sync_playwright  # imported lazily: only
+    # installed for runs that actually attempt the funds fetch (see prices.yml)
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch(args=["--disable-blink-features=AutomationControlled"])
+        try:
+            context = browser.new_context(
+                user_agent=BROWSER_UA,
+                viewport={"width": 1366, "height": 900},
+                locale="en-US",
+            )
+            context.add_init_script(
+                "Object.defineProperty(navigator, 'webdriver', {get: () => undefined});"
+            )
+            page = context.new_page()
+            page.goto(url, timeout=timeout_ms, wait_until="domcontentloaded")
+            # The challenge auto-resolves and reloads the page client-side; poll
+            # the title instead of trusting the first response.
+            for _ in range(6):
+                if "Just a moment" not in page.title():
+                    break
+                page.wait_for_timeout(5000)
+            page.wait_for_load_state("networkidle", timeout=timeout_ms)
+            return page.content()
+        finally:
+            browser.close()
+
+
 def mufap_navs():
     """Scrape the MUFAP daily industry-stats table (server-rendered HTML).
 
-    Retries once: a WAF block can come back as a normal HTTP 200 with an
-    interstitial/challenge page instead of a curl error, which would
-    otherwise parse to zero matches on the first try.
+    Retries the cheap curl path once: a WAF block can come back as a normal
+    HTTP 200 with an interstitial/challenge page instead of a curl error,
+    which would otherwise parse to zero matches on the first try. Falls back
+    to a headless browser (mufap_navs_playwright) when curl can't clear the
+    Cloudflare challenge at all.
     """
     url = "https://www.mufap.com.pk/Industry/IndustryStatDaily?tab=1"
     for attempt in (1, 2):
@@ -131,6 +190,16 @@ def mufap_navs():
             print(f"  mufap fetch failed (attempt {attempt}): {e}", file=sys.stderr)
         if attempt == 1:
             time.sleep(15)
+
+    try:
+        page = mufap_navs_playwright(url)
+        navs = _parse_mufap_navs(page)
+        if navs:
+            print("  mufap fetch succeeded via headless-browser fallback")
+            return navs
+        print("  mufap headless-browser fetch returned no matches", file=sys.stderr)
+    except Exception as e:
+        print(f"  mufap headless-browser fetch failed: {e}", file=sys.stderr)
     return {}
 
 
@@ -151,7 +220,7 @@ def main():
 
     funds = dict(old.get("funds", {}))
     funds_updated = old.get("funds_updated")
-    if should_fetch_funds():
+    if should_fetch_funds(funds_updated, pkt_day):
         navs = mufap_navs()
         funds.update(navs)
         if navs:
