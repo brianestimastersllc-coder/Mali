@@ -222,7 +222,7 @@ const DEFAULT_HOLDINGS = {
     { sym:'BWCL',    name:'Bestway Cement',            qty:1700,  avg:461.30 },
     { sym:'CPHL',    name:'Citi Pharma',               qty:10000, avg:84.37 },
     { sym:'FABL',    name:'Faysal Bank',               qty:6000,  avg:67.55 },
-    { sym:'NATF',    name:'National Foods',            qty:2000,  avg:356.93 },
+    { sym:'NATF',    name:'National Foods',            qty:2800,  avg:354.00 },
     { sym:'GLAXO',   name:'GlaxoSmithKline Pakistan',  qty:1400,  avg:354.39 },
     { sym:'AIRLINK', name:'Air Link Communication',    qty:3300,  avg:146.55 },
     { sym:'MEBL',    name:'Meezan Bank',               qty:900,   avg:363.80 },
@@ -230,12 +230,12 @@ const DEFAULT_HOLDINGS = {
     { sym:'MUGHAL',  name:'Mughal Iron & Steel',       qty:3900,  avg:65.54 },
     { sym:'MZNPETF', name:'Meezan Pakistan ETF',       qty:40000, avg:18.40 },
     { sym:'GHGL',    name:'Ghani Glass',               qty:6100,  avg:34.73 },
-    { sym:'SEARL',   name:'The Searle Company',        qty:2335,  avg:82.90 },
+    { sym:'SEARL',   name:'The Searle Company',        qty:3450,  avg:82.11 },
     { sym:'FATIMA',  name:'Fatima Fertilizer',         qty:1200,  avg:107.50 },
-    { sym:'MIIETF',  name:'Mahaana Islamic Index ETF', qty:20000, avg:16.41 },
+    { sym:'MIIETF',  name:'Mahaana Islamic Index ETF', qty:25000, avg:16.29 },
     { sym:'FFL',     name:'Fauji Foods',               qty:8000,  avg:15.35 },
     { sym:'DCR',     name:'Dolmen City REIT',          qty:3000,  avg:31.25 },
-    { sym:'UPFL',    name:'Unilever Pakistan Foods',   qty:3,     avg:20942 }
+    { sym:'UPFL',    name:'Unilever Pakistan Foods',   qty:2,     avg:20963 }
   ],
   funds: [
     { sym:'ASSF',    name:'Al-Ameen Shariah Stock Fund',      qty:2269.05,  avg:445.47 },
@@ -246,7 +246,7 @@ const DEFAULT_HOLDINGS = {
     { sym:'AICF',    name:'Al-Ameen Islamic Cash Fund',       qty:1993.24,  avg:101.53 },
     { sym:'MICF',    name:'Mahaana Islamic Cash Fund',        qty:2795.44,  avg:107.32 }
   ],
-  cash: 2250
+  cash: 0
 };
 
 let holdings = JSON.parse(localStorage.getItem(LS_HOLD) || 'null') || structuredClone(DEFAULT_HOLDINGS);
