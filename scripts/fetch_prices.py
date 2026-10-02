@@ -86,19 +86,33 @@ def get_via_curl(url, timeout=30):
     return r.stdout
 
 
+ETF_SYMBOLS = {"MZNPETF", "MIIETF"}
+
+QUOTE_CLOSE_RE = re.compile(r'quote__close">Rs\.([\d,]+\.?\d*)')
+
+
 def psx_price(sym):
+    """Scrape the live quote page (dps.psx.com.pk/company or /etf).
+
+    The old /timeseries/int and /timeseries/eod JSON endpoints this used to
+    call now return a 404 HTML page for every symbol (confirmed 2026-10-02) —
+    json.loads() on that 404 page threw, both tries silently failed, and the
+    caller's `if p:` guard just kept whatever price was already on file, so
+    prices.json froze while its 'updated' timestamp kept advancing as if
+    nothing were wrong. The quote page is still server-rendered HTML (no JS
+    needed) with the live close in a `quote__close` div — confirmed fresh
+    against independent sources (stockanalysis.com, the user's brokerage
+    app) on 2026-10-02.
+    """
+    kind = "etf" if sym in ETF_SYMBOLS else "company"
     try:
-        j = json.loads(get(f"https://dps.psx.com.pk/timeseries/int/{sym}"))
-        if j.get("data"):
-            return float(j["data"][0][1])
+        page = get(f"https://dps.psx.com.pk/{kind}/{sym}")
+        m = QUOTE_CLOSE_RE.search(page)
+        if m:
+            return float(m.group(1).replace(",", ""))
+        print(f"  quote__close not found on page for {sym}", file=sys.stderr)
     except Exception as e:
-        print(f"  intraday failed for {sym}: {e}", file=sys.stderr)
-    try:  # fall back to last end-of-day close (weekends / delisted symbols)
-        j = json.loads(get(f"https://dps.psx.com.pk/timeseries/eod/{sym}"))
-        if j.get("data"):
-            return float(j["data"][0][1])
-    except Exception as e:
-        print(f"  eod failed for {sym}: {e}", file=sys.stderr)
+        print(f"  quote page fetch failed for {sym}: {e}", file=sys.stderr)
     return None
 
 
