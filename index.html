@@ -103,6 +103,17 @@
   .b-TRIM, .b-REVIEW { background:rgba(255,159,67,.15); color:var(--orange); }
   .b-WATCH { background:rgba(212,169,78,.15); color:var(--gold); }
   .sec-title { font-size:13px; color:var(--dim); margin:16px 4px 8px; text-transform:uppercase; letter-spacing:1px; }
+  .sortbar { display:flex; align-items:center; gap:8px; margin:14px 4px 0; }
+  .sortbar-label { font-size:12px; color:var(--dim); white-space:nowrap; }
+  .sortbar select {
+    background:var(--card); border:1px solid var(--line); color:var(--txt);
+    border-radius:8px; padding:7px 8px; font-size:12.5px; flex:1; min-width:0;
+  }
+  #sortDirBtn {
+    background:var(--card); border:1px solid var(--line); color:var(--gold);
+    border-radius:8px; padding:7px 12px; font-size:14px; flex-shrink:0;
+  }
+  #sortDirBtn:active { background:var(--card2); }
   nav {
     position:fixed; bottom:0; left:0; right:0; max-width:560px; margin:0 auto;
     display:flex; background:rgba(13,20,38,.96); backdrop-filter:blur(12px);
@@ -164,6 +175,18 @@
       <div id="buyzoneLine"></div>
       <svg id="trend" preserveAspectRatio="none"></svg>
     </div>
+    <div class="sortbar">
+      <span class="sortbar-label">Sort by</span>
+      <select id="sortKey" onchange="setSortKey(this.value)">
+        <option value="sym">Symbol</option>
+        <option value="val">Value</option>
+        <option value="plp">P/L %</option>
+        <option value="pl">Gain/Loss</option>
+        <option value="price">Price</option>
+        <option value="qty">Quantity</option>
+      </select>
+      <button id="sortDirBtn" onclick="toggleSortDir()">↑</button>
+    </div>
     <div class="sec-title">Stocks (PSX)</div>
     <div id="stockList"></div>
     <div class="sec-title">Mutual Funds</div>
@@ -214,7 +237,7 @@
 
 <script>
 const RAW = 'https://raw.githubusercontent.com/brianestimastersllc-coder/Mali/main';
-const LS_HOLD = 'sarmaya-holdings-v1', LS_PRICES = 'sarmaya-prices-v1', LS_ADVICE = 'sarmaya-advice-v1', LS_HIST = 'sarmaya-history-v1', LS_ENTRY = 'mali-entry-overrides-v1';
+const LS_HOLD = 'sarmaya-holdings-v1', LS_PRICES = 'sarmaya-prices-v1', LS_ADVICE = 'sarmaya-advice-v1', LS_HIST = 'sarmaya-history-v1', LS_ENTRY = 'mali-entry-overrides-v1', LS_SORT = 'mali-sort-v1';
 
 const DEFAULT_HOLDINGS = {
   stocks: [
@@ -223,7 +246,7 @@ const DEFAULT_HOLDINGS = {
     { sym:'CPHL',    name:'Citi Pharma',               qty:10000, avg:84.37 },
     { sym:'FABL',    name:'Faysal Bank',               qty:6000,  avg:67.55 },
     { sym:'NATF',    name:'National Foods',            qty:2800,  avg:354.00 },
-    { sym:'GLAXO',   name:'GlaxoSmithKline Pakistan',  qty:1400,  avg:354.39 },
+    { sym:'GLAXO',   name:'GlaxoSmithKline Pakistan',  qty:1500,  avg:351.14 },
     { sym:'AIRLINK', name:'Air Link Communication',    qty:3300,  avg:146.55 },
     { sym:'MEBL',    name:'Meezan Bank',               qty:900,   avg:363.80 },
     { sym:'EFERT',   name:'Engro Fertilizers',         qty:3000,  avg:196.99 },
@@ -232,7 +255,7 @@ const DEFAULT_HOLDINGS = {
     { sym:'GHGL',    name:'Ghani Glass',               qty:6100,  avg:34.73 },
     { sym:'SEARL',   name:'The Searle Company',        qty:3450,  avg:82.11 },
     { sym:'FATIMA',  name:'Fatima Fertilizer',         qty:1200,  avg:107.50 },
-    { sym:'MIIETF',  name:'Mahaana Islamic Index ETF', qty:25000, avg:16.29 },
+    { sym:'MIIETF',  name:'Mahaana Islamic Index ETF', qty:30000, avg:16.21 },
     { sym:'FFL',     name:'Fauji Foods',               qty:8000,  avg:15.35 },
     { sym:'DCR',     name:'Dolmen City REIT',          qty:3000,  avg:31.25 },
     { sym:'UPFL',    name:'Unilever Pakistan Foods',   qty:2,     avg:20963 }
@@ -254,6 +277,7 @@ let prices   = JSON.parse(localStorage.getItem(LS_PRICES) || 'null') || { update
 let advice   = JSON.parse(localStorage.getItem(LS_ADVICE) || 'null');
 let history  = JSON.parse(localStorage.getItem(LS_HIST) || 'null') || {};
 let entryOverrides = JSON.parse(localStorage.getItem(LS_ENTRY) || '{}');
+let sortPref = JSON.parse(localStorage.getItem(LS_SORT) || 'null') || { key:'sym', dir:'asc' };
 
 const fmt0 = new Intl.NumberFormat('en-PK', { maximumFractionDigits:0 });
 const fmt2 = new Intl.NumberFormat('en-PK', { maximumFractionDigits:2, minimumFractionDigits:2 });
@@ -316,9 +340,44 @@ function resetEntryOverride(sym) {
   render(); toast(`${sym} back to Mali's level`);
 }
 
+function sortValue(kind, h, key) {
+  const p = priceOf(kind, h), inv = h.avg * h.qty, val = p * h.qty;
+  switch (key) {
+    case 'val':   return val;
+    case 'pl':    return val - inv;
+    case 'plp':   return inv ? (val - inv) / inv * 100 : 0;
+    case 'price': return p;
+    case 'qty':   return h.qty;
+    default:      return h.sym;
+  }
+}
+function applySort(kind, arr) {
+  const { key, dir } = sortPref, mul = dir === 'asc' ? 1 : -1;
+  return [...arr].sort((a, b) => {
+    const va = sortValue(kind, a, key), vb = sortValue(kind, b, key);
+    return typeof va === 'string' ? va.localeCompare(vb) * mul : (va - vb) * mul;
+  });
+}
+function setSortKey(key) {
+  sortPref.key = key;
+  localStorage.setItem(LS_SORT, JSON.stringify(sortPref));
+  render();
+}
+function toggleSortDir() {
+  sortPref.dir = sortPref.dir === 'asc' ? 'desc' : 'asc';
+  localStorage.setItem(LS_SORT, JSON.stringify(sortPref));
+  render();
+}
+function renderSortbar() {
+  const sel = document.getElementById('sortKey');
+  if (sel) sel.value = sortPref.key;
+  const btn = document.getElementById('sortDirBtn');
+  if (btn) btn.textContent = sortPref.dir === 'asc' ? '↑' : '↓';
+}
+
 function renderList(el, kind, arr) {
   el.innerHTML = '';
-  const sorted = [...arr].sort((a, b) => priceOf(kind, b) * b.qty - priceOf(kind, a) * a.qty);
+  const sorted = applySort(kind, arr);
   for (const h of sorted) {
     const p = priceOf(kind, h), val = p * h.qty, inv = h.avg * h.qty;
     const pl = val - inv, plp = inv ? pl / inv * 100 : 0;
@@ -436,6 +495,7 @@ function render() {
     : near ? `🎯 ${near} holding${near > 1 ? 's' : ''} near entry — tap to see levels`
     : '';
   renderUpdated();
+  renderSortbar();
   renderList(document.getElementById('stockList'), 'stock', holdings.stocks);
   renderList(document.getElementById('fundList'), 'fund', holdings.funds);
   renderTrend();
