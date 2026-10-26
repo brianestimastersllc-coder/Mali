@@ -204,97 +204,29 @@
                                      }
                                  ]
                    },
-    "entries":  {
-                    "updated":  "2026-10-13",
-                    "basis":  "Monthly-timeframe accumulation zones for a 10-25yr horizon: where fundamentals + monthly support align to add in small portions. 'entry' = start nibbling at/below; 'add' = deeper monthly support to load more. Re-based Oct 2, 2026 against verified PSX Data Portal closes, 50-day/200-day moving averages and 52-week ranges (most names have drifted down since the Sep 1 levels were set, so entries moved down with them) â€” Pakistan macro-aware (SBP 11.5%, KSE-100 ~11% off the Jan ATH). Re-checked Oct 9, 2026 against fresh 52-week ranges and a self-computed 50-day average from this app's own price history: every level held up except CPHL, which had already fallen through its old add line â€” see its note. Mutual funds are NAV-based and don't get a level (MIF's old entry was a leftover inconsistency, removed this pass). These are accumulation guides, not precise buy/sell signals â€” verify with your broker. Re-checked Oct 13, 2026 alongside a same-day fundamentals deep-dive: CPHL and FATIMA converted from open accumulation zones to pause/trim styling (exitLabel) given confirmed capital-allocation and quality-metric concerns -- see their action entries for the full reasoning. No other level moved today (no monthly-timeframe shift large enough to react to).",
-                    "levels":  {
-                                   "MZNPETF":  {
-                                                   "entry":  17.3,
-                                                   "add":  16.8,
-                                                   "note":  "Broad Islamic index ETF â€” your #1 DCA vehicle. Trading right at its 52-week low band (16.77-25.29). Accumulate on any dip; add = right at the 52-week low."
-                                               },
-                                   "MIIETF":  {
-                                                  "entry":  16.0,
-                                                  "add":  15.2,
-                                                  "note":  "Second index-ETF leg, also near the bottom of its 52-week range (14.40-20.83). Same DCA logic â€” buy small and often, more at the add level."
-                                              },
-                                   "MEBL":  {
-                                                "entry":  540,
-                                                "add":  505,
-                                                "note":  "Core compounder, Rs 552 now, sitting between its 50-day (~563) and 200-day (~503) averages. Start adding on a pullback to ~540; back up the truck near Rs 505 (close to the 200-day line and the standing Rs 500 allocation gate)."
-                                            },
-                                   "FABL":  {
-                                                "entry":  93,
-                                                "add":  87,
-                                                "note":  "Islamic-conversion deposit growth intact; +38% on cost. Rs 93 sits almost exactly on its 200-day average (~93) â€” real support, not a random number. Add there, more near 87."
-                                            },
-                                   "NATF":  {
-                                                "entry":  335,
-                                                "add":  322,
-                                                "note":  "Consumer-staple compounder that's sold off hard post-results (now well below both its 50-day ~369 and 200-day ~379 averages) â€” likely profit-taking after the one-off-flattered FY26 print. Add near 335, more right at the 52-week low (~322)."
-                                            },
-                                   "FATIMA":  {
-                                                  "entry":  null,
-                                                  "note":  "DOWNGRADED Oct 13 (fundamentals deep-dive): the ~Rs 50bn PIA Equity / ~Rs 9.9bn Fatima Petroleum commitment is now confirmed, and the H1 dividend was skipped despite rising profit. Core earnings are fine, but pause new adds until capital discipline or the dividend is restored -- see the WATCH call.",
-                                                  "exitLabel":  "Pause adds â€” capital-discipline concern"
-                                              },
-                                   "BWCL":  {
-                                                "entry":  450,
-                                                "add":  415,
-                                                "note":  "Cement upcycle, dividend payer, FY26 payout fully paid out. Below BOTH its 50-day (~477) and 200-day (~481) averages â€” a real, not cosmetic, pullback. Add near 450, more toward 415 on the way to the 52-week low (~386)."
-                                            },
-                                   "GLAXO":  {
-                                                 "entry":  314,
-                                                 "add":  298,
-                                                 "note":  "Defensive pharma with a pricing-deregulation tailwind, below both moving averages (50-day ~332, 200-day ~362). Add near 314, more near 298 toward the 52-week low (~293)."
-                                             },
-                                   "SEARL":  {
-                                                 "entry":  79,
-                                                 "add":  74,
-                                                 "note":  "Pharma, WATCH not HOLD â€” FY26 confirmed a loss-to-profit swing (EPS Rs0.75) but Q4 alone lost Rs1.8bn and the ~87% tax rate still hasn't normalized. Well below both its 50-day (~86) and 200-day (~97) averages â€” cheap, but wait for the tax picture to clear before sizing up. Add small near 79, more near 74."
-                                             },
-                                   "CPHL":  {
-                                                "entry":  null,
-                                                "note":  "DOWNGRADED Oct 13 (fundamentals deep-dive): ROE/ROIC/current-ratio/leverage have all deteriorated over several years while the stock trades at the richest P/E of the pharma holdings. Not an accumulation candidate right now -- see the TRIM call.",
-                                                "exitLabel":  "Trim â€” quality deteriorating, don't add"
-                                            },
-                                   "GHGL":  {
-                                                "entry":  39,
-                                                "add":  36,
-                                                "note":  "Solid industrial, cheap on earnings, Rs 1 dividend confirmed (ex Oct 21). Levels unchanged, still a fair add zone."
-                                            },
-                                   "MUGHAL":  {
-                                                  "entry":  69,
-                                                  "add":  61,
-                                                  "note":  "Steel cyclical â€” NOT a forever hold. Below both its 50-day (~76) and 200-day (~82) averages. Only add near current levels; more near 61 on the way to the 52-week low (~59); be ready to trim on a doubling."
-                                              },
-                                   "DCR":  {
-                                               "entry":  38.5,
-                                               "add":  37,
-                                               "note":  "REIT â€” income play with steady rental dividends. Add for yield near 38.5, more near 37 (its 200-day average); inflation hedge."
-                                           },
-                                   "EFERT":  {
-                                                 "entry":  183,
-                                                 "add":  172,
-                                                 "note":  "INCOME, not growth (WATCH) â€” board meets Oct 19 for 9M results. Only add for the yield on a real pullback toward 183, more near 172 â€” urea glut not confirmed cleared, don't overweight."
-                                             },
-                                   "AIRLINK":  {
-                                                   "entry":  120,
-                                                   "add":  110,
-                                                   "note":  "HIGH BETA, policy-dependent â€” cap the position. Near its 52-week low (~118); only small adds here, more near 110 if it breaks the low; trim on sharp rallies."
-                                               },
-                                   "FFL":  {
-                                               "entry":  14.3,
-                                               "add":  13.3,
-                                               "note":  "Turnaround, KEEP SMALL, CEO successor still unnamed. Right at its 52-week low band (~14.00); tiny adds only near 14.3, a touch more near 13.3; take profits if it runs 50%+."
-                                           },
-                                   "AVN":  {
-                                               "entry":  null,
-                                               "exitLabel":  "Reduce / exit â€” do not add",
-                                               "note":  "NOT a buy. H1 FY26 swung to a net loss; the thesis is broken. This is an exit candidate, not an accumulation â€” do not average down."
-                                           }
-                               }
-                },
+    "entries": {
+      "updated": "2026-10-26",
+      "basis": "Monthly-timeframe accumulation zones for a 10-25yr horizon: 'entry' = start nibbling at/below, 'add' = deeper monthly support to load more. Re-based 2026-10-26 against Oct 25 PSX closes, 50/200-day averages and 52-week ranges, alongside a full sector-by-sector fundamental review. entry=null marks a name that is NOT an accumulation candidate (exit/trim/consolidate -- see its action entry). Mutual funds are NAV-based and get no level. Guides, not precise signals -- verify with your broker.",
+      "levels": {
+        "MZNPETF": { "entry": 16.8, "add": 15.8, "note": "Primary index core and your #1 DCA vehicle. Now Rs 16.67, below the old Rs 16.8 add line and in its 52-week-low band -- with the market ~14% off its peak this is broad quality on sale. Accumulate steadily; this is the RIGHT place to average down (market-wide weakness, not a broken business)." },
+        "MIIETF": { "entry": 15.5, "add": 14.7, "note": "Second index leg, Rs 15.41, near its 52-week low. Same DCA logic but tilt lighter than MZNPETF -- wider tracking gap and higher fee. Add small and often." },
+        "MEBL": { "entry": 540, "add": 505, "note": "Core compounder, Rs 534 -- IN BUY ZONE (below the Rs 540 entry) for the first time this cycle, between its 50-day (~563) and 200-day (~503). Add here; load more near Rs 505 (200-day + the Rs 500 allocation gate). Primary destination for AVN-exit proceeds." },
+        "FABL": { "entry": 93, "add": 87, "note": "Rs 90, near its 200-day (~93). Cheap (P/E ~6) but earnings have stalled two years running and capital is thinner than MEBL's -- add only modestly, don't oversize. More near 87." },
+        "NATF": { "entry": 320, "add": 300, "note": "Rs 312 -- below its old add line after a hard post-results selloff. Moated consumer-staple compounder, but value it on RECURRING earnings (~Rs 25 EPS), not the one-off-inflated FY26 headline. Add near 320, more near 300. NOTE: a 5-for-1 split is pending -- these are pre-split levels; we rescale (/5) once it takes effect." },
+        "FATIMA": { "entry": null, "exitLabel": "Pause adds -- capital-discipline watch", "note": "Core fertilizer earnings are fine (ROE ~21%), but the confirmed ~Rs 70bn diversion into PIA (airline) + Fatima Petroleum (E&P) and the skipped H1 dividend are real capital-discipline flags. HOLD what you have; pause new adds until the dividend resumes or the capital calls stay within approved limits." },
+        "BWCL": { "entry": 450, "add": 415, "note": "Rs 452 -- in the buy zone, below both its 50-day (~477) and 200-day (~481). Quality construction-cycle leader, ~9% yield, and a double winner if the SBP cuts (cheaper financing for builders + lower finance costs for BWCL). Rising coal is the margin offset to watch. Add near 450, more near 415." },
+        "GLAXO": { "entry": 314, "add": 298, "note": "Rs 309 -- in buy zone, below both averages. The quality pharma anchor (cheapest P/E ~9.5, defensive, MNC) and the RIGHT pharma name to average into. Add near 314, more near 298." },
+        "SEARL": { "entry": 79, "add": 72, "note": "Rs 74.6 -- turnaround now showing in the numbers: Q1 FY27 profit +31%, margins up, and the ~87% tax distortion looks to be normalizing. Still WATCH until one more clean quarter, but the direction is up. Add small near 79, more near 72." },
+        "CPHL": { "entry": null, "exitLabel": "Trim -- quality deteriorating, don't add", "note": "ROE/ROIC now below the risk-free rate, weakening balance sheet, and the richest P/E of the pharma peers -- deteriorating, not an add. Standing TRIM: cut ~half, keep half for the REIT-demerger optionality." },
+        "GHGL": { "entry": 39, "add": 36, "note": "Rs 38.5 -- upgraded this review: nearly DEBT-FREE (net cash ~Rs 5.9bn), FY26 profit +22%, P/E ~5, ~10% dividend yield, and diversified end-markets (pharma/food packaging + construction). A quiet value/income add on dips; near 39, more near 36." },
+        "MUGHAL": { "entry": null, "exitLabel": "Not an add -- reduce candidate (Engineering review)", "note": "Rs 60, through its old add line. Flagged as the weak construction bet: FY26 'profit growth' was a finance-cost illusion while revenue fell 13% and debt rose 36% (interest coverage a thin 2.2x). Leveraged cyclical, not a 5-7yr compounder -- reduce candidate pending your trim decision. Only a deep cyclical-bottom nibble, never a core add." },
+        "DCR": { "entry": 38.5, "add": 37, "note": "Rs 39.3 -- REIT income play with steady rental dividends and an inflation hedge; low correlation to the equity cycle. Add for yield near 38.5, more near 37 (200-day)." },
+        "EFERT": { "entry": 190, "add": 178, "note": "Rs 194 -- upgraded to HOLD after 9M results: dividend RAISED to Rs 5.50 (ex Oct 30), urea offtake recovering, ~11% yield (about the risk-free rate, in cash). One of the few names where adding for income genuinely makes sense; nibble toward 190, more near 178." },
+        "AIRLINK": { "entry": 110, "add": 100, "note": "Rs 116, high-beta and policy-dependent -- cap the position. Its Q1 FY27 print is imminent and is the real test of whether FY26's deceleration continued; WAIT for it before adding. Small adds only near 110 if it holds, more near 100." },
+        "FFL": { "entry": null, "exitLabel": "Not an add -- consolidation candidate (Food review)", "note": "Rs 13.4. Flagged to consolidate into NATF: revenue is growing but PROFIT is falling (-24% H1) and the CEO seat is empty. Not an accumulation -- hold pending your sell decision, then roll into NATF/ETFs." },
+        "AVN": { "entry": null, "exitLabel": "Reduce / exit -- do not add", "note": "NOT a buy. Swung to a net loss AND carries a live PSX delisting/suspension risk warning -- the business and the listing are both broken. Full EXIT; never average down (a suspension could trap the position)." }
+      }
+    },
     "notes":  "Big picture for a 10-25 year horizon: (1) MARKET -- KSE-100 closed 162,374.87, -0.95% on a broad down day; portfolio value ~Rs10,666,256 vs cost ~Rs11,493,729 = -7.20% on cost (vs Oct22's -6.23%) -- a genuine market-wide pullback (KSE-100 -0.95%), not an isolated-holding issue; three holdings (MUGHAL, CPHL, SEARL) individually crossed the 2pt same-run-research threshold and were researched, with no new negative company-specific findings beyond the market move itself. KSE-100 drawdown off the Jan23 ATH widened sharply to ~14.34% -- still well TRIGGERED past 10%, and now ~95.6% of the way to the 15% heavier-shift line, the closest to Triggered this review cycle has seen -- per the three-state rule this stays 'prepare, not act': the plan (shift AICF/MICF into MZNPETF/MIIETF) is unchanged, but this deserves close attention over the next few sessions. (2) MACRO -- SBP 11.5% (held since Sep14, next MPC Oct26, three days away); T-bill/PIB and PKR (~Rs276.87 interbank, Oct21) unchanged from already-on-file reads, no newer data found this run. IMF: status unchanged, no board action found. (3) HOLDINGS CHANGE: UPFL (2 shares, ~Rs59K) was fully liquidated and dropped from index.html on Oct22, 2026 (McCormick/Conopco takeover situation did not require this review to act -- the user appears to have sold directly) -- this advice.json has been updated to match: UPFL's action entry and entries-strip level removed. Portfolio is now 17 stocks + 7 funds = 24 positions, down from 25. (4) TWO STANDING RECOMMENDATIONS STILL UNEXECUTED: AVN's full EXIT (Risk Warning Alert for continuous Clause 5.11.1/5.11.2 violation still active, no new date; thesis unchanged) and the AICF/MICF dry-powder redeployment into MZNPETF/MIIETF (10% drawdown trigger still crossed, now more urgent with the 15% line at ~95.6%) -- sync index.html if either was done off-app. (5) TODAY'S KEY EVENTS: (a) SEARL's Q1 FY27 results show profit +31% YoY with a markedly improved implied tax rate vs FY26's ~87% -- a genuinely new, modestly positive data point, flagged in the push notification. (b) AKDISSF's FY26 results (nil dividend) and a PACRA ranking downgrade to 2-Star -- a quality flag for this passively-held active fund, not actionable. (c) NISIF and NISF both filed FY26 annual results with modest interim dividends -- routine, no action implied. (6) RESEARCH THIS RUN: Open theses -- AVN: Risk Warning Alert and Oct21 board notice unchanged, no new results. EFERT: ex-div countdown continues (Oct30, 7 days), Oct22 corporate briefing held, still no primary PSX payout notice. 3 largest holdings (ASSF/NATF/BWCL, weights recomputed this run at 9.56%/9.21%/7.21% of portfolio MV -- MZNPETF has grown to 7.03%, close behind BWCL but ranking unchanged): ASSF -- no new Oct news; NATF -- AGM-date conflict (Oct26 vs Oct29) still unresolved; BWCL -- no new filings beyond what's on file. Same-run research (loss grew >2pt): MUGHAL, CPHL, SEARL -- see action entries; all traced to the broad pullback except SEARL's genuinely new earnings print. Rotation (today's pick, the Oct19-dated tied-oldest group): MIIETF, AKDISSF, FATIMA, plus the Oct20-dated NISIF, NISF -- see action entries for findings. (7) EX-DIV/EARNINGS SWEEP: confirmed none for ASSF/AICF/MICF (NAV-based, no distinct Oct event) and AIRLINK (FY26 dividend confirmed nil, carried forward) / found: EFERT (Rs5.50/share, ex-div Oct30, still 3-source secondary corroboration), MUGHAL (Rs2/share, book closure Oct20-28 continuing), NATF (Rs5/share, book closure Oct19-26 continuing), NISIF (Rs1.2023/unit interim, FY26 annual), NISF (Rs0.2597/unit interim, FY26 annual), AKDISSF (Nil dividend, FY26 annual) / inconclusive for: AVN, BWCL, FABL, GLAXO, MZNPETF, MIIETF, FFL, CPHL, MEBL (Q3/9M results filed Oct22, figures still pending), DCR, FATIMA, GHGL, MIF. (8) CONCENTRATION CHECK -- verdict unchanged: fine as-is apart from AVN; one dust position (UPFL) has already been resolved by liquidation, so there is no remaining dust-consolidation action needed; EFERT/FATIMA and GLAXO/SEARL/CPHL retain some thematic overlap but distinct theses. (9) ENTRY LEVELS: not re-based this review -- no monthly-timeframe shift large enough to react to; levels last corrected Oct13 stand as current. Notable price-vs-level moves (not level changes): MEBL dropped below its Rs540 entry for the first time this cycle (now in buy zone); MUGHAL dropped through its Rs61 add line; FFL is almost exactly at its Rs13.3 add line. UPFL's entries-strip level entry has been removed along with its action entry. (10) DATA QUALITY: fund NAVs are current (funds_updated 2026-10-23, same day, not stale) for the second cycle running -- the MUFAP scrape fix appears to be holding. Stock prices are the confirmed close as of prices.json updated 2026-10-23T14:13:56Z. (11) Expect 10-15% drawdowns; they are the price of the 40%+ years -- don't panic-sell core holdings on the way down and don't chase the bounce. The 15% line is now at ~95.6% of the way there -- watch very closely over the next session or two; still not acting on it yet.",
     "disclaimer":  "AI-generated decision support based on public data. Not licensed investment advice. Verify before trading. Last reviewed 23 Oct 2026."
 }
