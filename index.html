@@ -263,7 +263,6 @@ const DEFAULT_HOLDINGS = {
     { sym:'AKDISSF', name:'AKD Islamic Stock Fund',           qty:4793.47,  avg:107.44 },
     { sym:'NISIF',   name:'NBP Islamic Sarmaya Izafa Fund',   qty:11554.72, avg:34.90 },
     { sym:'NISF',    name:'NBP Islamic Stock Fund',           qty:9544.83,  avg:20.95 },
-    { sym:'MIF',     name:'Meezan Islamic Fund',              qty:1389.19,  avg:143.83 },
     { sym:'AICF',    name:'Al-Ameen Islamic Cash Fund',       qty:1993.24,  avg:101.53 },
     { sym:'MICF',    name:'Mahaana Islamic Cash Fund',        qty:2795.44,  avg:107.32 }
   ],
@@ -619,10 +618,9 @@ const FALLBACK_ALLOC = {
   updated: '2026-07-04',
   rationale: 'Default plan: new money goes mostly into broad Islamic index ETFs, Meezan Bank on dips, an active fund leg, and a dry-powder reserve.',
   items: [
-    { sym:'MZNPETF', name:'Meezan Pakistan ETF',       weight:30, note:'Broad index exposure — the default home for new money' },
+    { sym:'MZNPETF', name:'Meezan Pakistan ETF',       weight:45, note:'Broad index exposure — the default home for new money' },
     { sym:'MIIETF',  name:'Mahaana Islamic Index ETF', weight:20, note:'Second index leg, low cost' },
     { sym:'MEBL',    name:'Meezan Bank',               weight:20, max_price:500, note:'Only below Rs 500 — otherwise this slice goes to the others' },
-    { sym:'MIF',     name:'Meezan Islamic Fund',       weight:15, note:'Actively managed equity leg' },
     { sym:'AICF',    name:'Al-Ameen Islamic Cash Fund',weight:15, note:'Dry powder — deploy on a 10–15% market correction' }
   ]
 };
