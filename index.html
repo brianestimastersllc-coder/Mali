@@ -269,6 +269,15 @@ const DEFAULT_HOLDINGS = {
   cash: 443700
 };
 
+// Bump HOLD_VERSION whenever DEFAULT_HOLDINGS is re-synced from the broker; devices with an older
+// stamp drop their saved copy and adopt the new defaults (otherwise a Settings save would pin old numbers forever).
+const HOLD_VERSION = '2026-11-11';
+try {
+  if (localStorage.getItem('mali-hold-version') !== HOLD_VERSION) {
+    localStorage.removeItem(LS_HOLD);
+    localStorage.setItem('mali-hold-version', HOLD_VERSION);
+  }
+} catch {}
 let holdings = JSON.parse(localStorage.getItem(LS_HOLD) || 'null') || structuredClone(DEFAULT_HOLDINGS);
 let prices   = JSON.parse(localStorage.getItem(LS_PRICES) || 'null') || { updated:null, stocks:{}, funds:{} };
 let advice   = JSON.parse(localStorage.getItem(LS_ADVICE) || 'null');

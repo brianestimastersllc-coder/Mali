@@ -1,4 +1,4 @@
-const CACHE = 'mali-v7';
+const CACHE = 'mali-v8';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon-180.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
