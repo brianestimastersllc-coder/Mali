@@ -244,8 +244,8 @@ const DEFAULT_HOLDINGS = {
     { sym:'BWCL',    name:'Bestway Cement',            qty:1700,  avg:461.30 },
     { sym:'CPHL',    name:'Citi Pharma',               qty:9000, avg:83.32 },
     { sym:'FABL',    name:'Faysal Bank',               qty:7000, avg:70.93 },
-    { sym:'NATF',    name:'National Foods',            qty:3400, avg:347.23 },
-    { sym:'GLAXO',   name:'GlaxoSmithKline Pakistan',  qty:1500,  avg:351.14 },
+    { sym:'NATF',    name:'National Foods',            qty:3900, avg:345.77 },
+    { sym:'GLAXO',   name:'GlaxoSmithKline Pakistan',  qty:2000, avg:348.06 },
     { sym:'AIRLINK', name:'Air Link Communication',    qty:3700, avg:142.94 },
     { sym:'MEBL',    name:'Meezan Bank',               qty:900,   avg:363.80 },
     { sym:'EFERT',   name:'Engro Fertilizers',         qty:3000,  avg:196.99 },
@@ -271,7 +271,7 @@ const DEFAULT_HOLDINGS = {
 
 // Bump HOLD_VERSION whenever DEFAULT_HOLDINGS is re-synced from the broker; devices with an older
 // stamp drop their saved copy and adopt the new defaults (otherwise a Settings save would pin old numbers forever).
-const HOLD_VERSION = '2026-11-11';
+const HOLD_VERSION = '2026-11-12';
 try {
   if (localStorage.getItem('mali-hold-version') !== HOLD_VERSION) {
     localStorage.removeItem(LS_HOLD);
