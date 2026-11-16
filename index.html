@@ -247,6 +247,7 @@ const DEFAULT_HOLDINGS = {
     { sym:'NATF',    name:'National Foods',            qty:3900, avg:345.77 },
     { sym:'GLAXO',   name:'GlaxoSmithKline Pakistan',  qty:2000, avg:348.06 },
     { sym:'AIRLINK', name:'Air Link Communication',    qty:4200, avg:139.59 },
+    { sym:'AVN',     name:'Avanceon',                  qty:7000, avg:27.80 },
     { sym:'MEBL',    name:'Meezan Bank',               qty:900,   avg:363.80 },
     { sym:'EFERT',   name:'Engro Fertilizers',         qty:3000,  avg:196.99 },
     { sym:'MUGHAL',  name:'Mughal Iron & Steel',       qty:5000, avg:64.99 },
@@ -266,12 +267,12 @@ const DEFAULT_HOLDINGS = {
     { sym:'AICF',    name:'Al-Ameen Islamic Cash Fund',       qty:1993.24,  avg:101.53 },
     { sym:'MICF',    name:'Mahaana Islamic Cash Fund',        qty:2795.44,  avg:107.32 }
   ],
-  cash: 443700
+  cash: 249100
 };
 
 // Bump HOLD_VERSION whenever DEFAULT_HOLDINGS is re-synced from the broker; devices with an older
 // stamp drop their saved copy and adopt the new defaults (otherwise a Settings save would pin old numbers forever).
-const HOLD_VERSION = '2026-11-13';
+const HOLD_VERSION = '2026-11-16';
 try {
   if (localStorage.getItem('mali-hold-version') !== HOLD_VERSION) {
     localStorage.removeItem(LS_HOLD);
@@ -629,6 +630,7 @@ const FALLBACK_ALLOC = {
   items: [
     { sym:'MZNPETF', name:'Meezan Pakistan ETF',       weight:45, note:'Broad index exposure — the default home for new money' },
     { sym:'MIIETF',  name:'Mahaana Islamic Index ETF', weight:20, note:'Second index leg, low cost' },
+    { sym:'AVN',     name:'Avanceon',                  qty:7000, avg:27.80 },
     { sym:'MEBL',    name:'Meezan Bank',               weight:20, max_price:500, note:'Only below Rs 500 — otherwise this slice goes to the others' },
     { sym:'AICF',    name:'Al-Ameen Islamic Cash Fund',weight:15, note:'Dry powder — deploy on a 10–15% market correction' }
   ]
