@@ -396,6 +396,13 @@ function renderList(el, kind, arr) {
       if (z) {
         if (z.z === 'exit') {
           entryBar = `<div class="entry-bar"><span class="ent-l">🚫 ${z.label}</span><span class="ez ez-exit">NO ADD</span></div>`;
+          const e0 = entryData(h.sym);
+          if (e0 && typeof e0.refEntry === 'number' && hasPrice(kind, h)) {
+            const g = (p - e0.refEntry) / e0.refEntry * 100;
+            const zc = p <= e0.refEntry ? 'in' : (g <= 5 ? 'near' : 'above');
+            const zl = p <= e0.refEntry ? 'at/below level' : (g <= 5 ? g.toFixed(1) + '% away' : g.toFixed(0) + '% above');
+            entryBar += `<div class="entry-bar" style="opacity:.85"><span class="ent-l">📍 Reference only: entry ≤ <b>${fmt2.format(e0.refEntry)}</b>${typeof e0.refAdd === 'number' ? ` · load < ${fmt2.format(e0.refAdd)}` : ''}</span><span class="ez ez-${zc}">${zl}</span></div>`;
+          }
         } else {
           const e = entryData(h.sym), lvl = effEntry(h.sym);
           const add = e && typeof e.add === 'number' ? e.add : null;
